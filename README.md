@@ -6,6 +6,8 @@ connection, authentication, account creation, form transmission, persistent
 storage, file upload, email, messaging, payment, escrow, or binding-contract
 capability.
 
+Public deployment: https://escrowless-public-demo.vercel.app
+
 Open `index.html` directly in a browser, or serve this folder with any simple static web server.
 
 ## Demo path
