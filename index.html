@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="en" data-environment="public-demo">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; connect-src 'none'; form-action 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; worker-src 'none'; base-uri 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'"
+    />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="robots" content="index, follow" />
+    <meta
+      name="description"
+      content="Public, read-only EscrowLess product demonstration using mock data only. Not for real estate transactions."
+    />
+    <meta property="og:title" content="EscrowLess Public Product Demo" />
+    <meta
+      property="og:description"
+      content="Explore a read-only, mock-data demonstration of the EscrowLess transaction experience. Not for real transactions."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://escrowless.net/" />
+    <link rel="canonical" href="https://escrowless.net/" />
+    <link rel="icon" href="favicon.ico" />
+    <title>EscrowLess | Public Product Demo</title>
+    <link rel="stylesheet" href="styles.css?v=3" />
+  </head>
+  <body>
+    <div class="prototype-banner">
+      <strong>Demo only · Not for real transactions</strong>
+      <button data-action="disclosure">Read full disclosure</button>
+    </div>
+
+    <header class="site-header">
+      <button class="brand" data-action="home" aria-label="EscrowLess home">
+        <span class="brand-mark" aria-hidden="true">
+          <span></span>
+          <span></span>
+        </span>
+        <span>Escrow<span>Less</span></span>
+      </button>
+
+      <nav aria-label="Primary navigation">
+        <button class="nav-link active" data-view-link="discover">Homes</button>
+        <button class="nav-link" data-view-link="workspace">My transaction</button>
+        <button class="nav-link" data-view-link="review">Review desk</button>
+      </nav>
+
+      <div class="header-actions">
+        <label class="role-switcher">
+          <span>Demo role</span>
+          <select id="roleSelect" aria-label="Choose demo role">
+            <option value="buyer">Buyer</option>
+            <option value="seller">Seller</option>
+            <option value="attorney">Reviewer</option>
+          </select>
+        </label>
+        <span class="demo-mode-badge">No account</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="view active" id="discoverView">
+        <div class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow">The simpler way home</p>
+            <h1>Find it. Offer. Close.<br /><em>All in one place.</em></h1>
+            <p class="hero-lede">
+              Explore how one guided workspace could take buyers and sellers
+              from a sample offer through a simulated closing.
+            </p>
+            <div class="search-box" role="search">
+              <span class="search-icon" aria-hidden="true"></span>
+              <label class="sr-only" for="propertySearch">Search properties</label>
+              <input
+                id="propertySearch"
+                type="search"
+                placeholder="City, neighborhood, or ZIP"
+                value="Richmond, VA"
+                readonly
+              />
+              <button class="primary-button" data-action="search">Search homes</button>
+            </div>
+            <div class="trust-row">
+              <span><i>✓</i> Simulated offers</span>
+              <span><i>✓</i> Mock review workflow</span>
+              <span><i>✓</i> Sample closing timeline</span>
+            </div>
+          </div>
+
+          <div class="hero-visual" aria-label="EscrowLess transaction overview">
+            <div class="visual-glow"></div>
+            <div class="floating-card offer-float">
+              <span class="mini-icon">O</span>
+              <div>
+                <small>Sample offer submitted</small>
+                <strong>$612,000</strong>
+              </div>
+              <span class="success-dot"></span>
+            </div>
+            <div class="house-scene">
+              <div class="sky-orb"></div>
+              <div class="house">
+                <span class="roof"></span>
+                <span class="wall"></span>
+                <span class="window one"></span>
+                <span class="window two"></span>
+                <span class="door"></span>
+              </div>
+              <div class="landscape"></div>
+            </div>
+            <div class="floating-card timeline-float">
+              <div class="timeline-head">
+                <span>Closing progress</span>
+                <strong>42%</strong>
+              </div>
+              <div class="mini-progress"><span></span></div>
+              <small>Next: mock review</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="content-shell">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Demo market · Richmond, Virginia</p>
+              <h2>Homes ready for a digital offer</h2>
+            </div>
+            <button class="text-button" data-action="explain">How digital offers work <span>→</span></button>
+          </div>
+
+          <div class="filter-row" aria-label="Property filters">
+            <button class="filter active">For sale</button>
+            <button class="filter">Any price</button>
+            <button class="filter">2+ beds</button>
+            <button class="filter">Sample facts</button>
+            <button class="filter">More filters</button>
+            <span class="results-count">3 demo homes</span>
+          </div>
+
+          <div class="property-grid" id="propertyGrid"></div>
+        </div>
+
+        <section class="process-band">
+          <div class="content-shell">
+            <p class="eyebrow">One screen to close</p>
+            <h2>Real estate without the scavenger hunt.</h2>
+            <div class="process-grid">
+              <article>
+                <span>01</span>
+                <div class="process-icon offer-icon"></div>
+                <h3>Build a clear offer</h3>
+                <p>Answer plain-English questions. EscrowLess structures the terms and catches missing details.</p>
+              </article>
+              <article>
+                <span>02</span>
+                <div class="process-icon review-icon"></div>
+                <h3>Preview a review workflow</h3>
+                <p>See where a future licensed professional could review exceptions before any signing step.</p>
+              </article>
+              <article>
+                <span>03</span>
+                <div class="process-icon close-icon"></div>
+                <h3>Follow every milestone</h3>
+                <p>Preview how buyer, seller, lender, title, and counsel could share one visible closing timeline.</p>
+              </article>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="view" id="propertyView">
+        <div class="content-shell property-detail-shell">
+          <button class="back-button" data-action="back-to-homes">← Back to homes</button>
+          <div id="propertyDetail"></div>
+        </div>
+      </section>
+
+      <section class="view" id="offerView">
+        <div class="workflow-shell">
+          <div class="workflow-heading">
+            <button class="back-button" data-action="back-to-property">← Property details</button>
+            <div class="workflow-title-row">
+              <div>
+                <p class="eyebrow">Guided offer</p>
+                <h1>Create your offer</h1>
+                <p id="offerPropertyLabel"></p>
+              </div>
+              <div class="step-meter">
+                <span>Step <strong id="stepNumber">1</strong> of 4</span>
+                <div><i></i><i></i><i></i><i></i></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="offerForm" aria-label="Interactive demo offer builder">
+            <div class="demo-readonly-note">
+              Fixed mock data only. Transaction fields are read-only and no information is submitted or stored.
+            </div>
+            <div class="offer-layout">
+              <div class="form-card">
+                <section class="form-step active" data-step="1">
+                  <p class="step-kicker">Price & financing</p>
+                  <h2>Start with the numbers.</h2>
+                  <div class="field-grid">
+                    <label class="field">
+                      <span>Offer price</span>
+                      <span class="money-input"><i>$</i><input id="offerPrice" type="number" min="100000" step="1000" readonly /></span>
+                    </label>
+                    <label class="field">
+                      <span>Financing</span>
+                      <select id="financingType" disabled>
+                        <option>Conventional loan</option>
+                        <option>FHA loan</option>
+                        <option>VA loan</option>
+                        <option>Cash</option>
+                      </select>
+                    </label>
+                    <label class="field">
+                      <span>Down payment</span>
+                      <select id="downPayment" disabled>
+                        <option value="20">20%</option>
+                        <option value="10">10%</option>
+                        <option value="5">5%</option>
+                        <option value="3.5">3.5%</option>
+                      </select>
+                    </label>
+                    <label class="field">
+                      <span>Earnest money</span>
+                      <span class="money-input"><i>$</i><input id="earnestMoney" type="number" min="0" step="500" value="6000" readonly /></span>
+                    </label>
+                  </div>
+                  <div class="upload-box">
+                    <span class="upload-icon">D</span>
+                    <div>
+                      <strong>Sample pre-approval preview</strong>
+                      <small>Mock metadata only · No file is uploaded</small>
+                    </div>
+                    <span class="verified-pill">Mock data</span>
+                  </div>
+                </section>
+
+                <section class="form-step" data-step="2">
+                  <p class="step-kicker">Protections</p>
+                  <h2>Choose your contingencies.</h2>
+                  <p class="form-intro">These selections will shape the draft and its deadline schedule.</p>
+                  <div class="choice-list">
+                    <label class="choice-card selected">
+                      <input type="checkbox" id="inspectionContingency" checked disabled />
+                      <span class="choice-check"></span>
+                      <span><strong>Home inspection</strong><small>Request 7 days to inspect and respond.</small></span>
+                      <em>7 days</em>
+                    </label>
+                    <label class="choice-card selected">
+                      <input type="checkbox" id="financingContingency" checked disabled />
+                      <span class="choice-check"></span>
+                      <span><strong>Financing</strong><small>Offer depends on final loan approval.</small></span>
+                      <em>21 days</em>
+                    </label>
+                    <label class="choice-card selected">
+                      <input type="checkbox" id="appraisalContingency" checked disabled />
+                      <span class="choice-check"></span>
+                      <span><strong>Appraisal</strong><small>Protect against a valuation below the purchase price.</small></span>
+                      <em>14 days</em>
+                    </label>
+                    <label class="choice-card">
+                      <input type="checkbox" id="homeSaleContingency" disabled />
+                      <span class="choice-check"></span>
+                      <span><strong>Sale of another home</strong><small>Make this offer dependent on another closing.</small></span>
+                      <em>Optional</em>
+                    </label>
+                  </div>
+                </section>
+
+                <section class="form-step" data-step="3">
+                  <p class="step-kicker">Timing & terms</p>
+                  <h2>Set a practical path to closing.</h2>
+                  <div class="field-grid">
+                    <label class="field">
+                      <span>Preferred closing date</span>
+                      <input id="closingDate" type="date" readonly />
+                    </label>
+                    <label class="field">
+                      <span>Seller response requested by</span>
+                      <input id="responseDate" type="date" readonly />
+                    </label>
+                    <label class="field full-field">
+                      <span>Personal property included</span>
+                      <input id="includedItems" type="text" value="Kitchen refrigerator, washer, and dryer" readonly />
+                    </label>
+                    <label class="field full-field">
+                      <span>Note to the seller <small>(not part of the legal terms)</small></span>
+                      <textarea id="buyerNote" rows="4" readonly>We love the natural light and the care you have put into the home.</textarea>
+                    </label>
+                  </div>
+                  <div class="notice-card">
+                    <span>i</span>
+                    <p><strong>Deadline check passed.</strong> The selected dates leave enough room for inspection, appraisal, financing, and document review.</p>
+                  </div>
+                </section>
+
+                <section class="form-step" data-step="4">
+                  <p class="step-kicker">Review</p>
+                  <h2>Everything in one clear summary.</h2>
+                  <div id="reviewSummary" class="review-summary"></div>
+                  <label class="consent-row">
+                    <input id="reviewConsent" type="checkbox" />
+                    <span>I understand this is a non-binding simulation that cannot be submitted or used for a real transaction.</span>
+                  </label>
+                </section>
+
+                <div class="form-actions">
+                  <button type="button" class="secondary-button" id="previousStep">Back</button>
+                  <button type="button" class="primary-button" id="nextStep">Continue</button>
+                </div>
+              </div>
+
+              <aside class="offer-aside">
+                <div class="aside-property" id="asideProperty"></div>
+                <div class="aside-section">
+                  <span class="aside-label">Offer strength</span>
+                  <div class="strength-row"><strong>Well positioned</strong><span>78</span></div>
+                  <div class="strength-meter"><i></i></div>
+                  <small>Based on price, financing, contingencies, and timeline.</small>
+                </div>
+                <div class="aside-section estimate-section">
+                  <span class="aside-label">Estimated EscrowLess fees</span>
+                  <strong id="feeEstimate">$0</strong>
+                  <small>Mock estimate only. No fee is quoted, offered, charged, or collected.</small>
+                </div>
+                <div class="human-note">
+                  <span>AP</span>
+                  <p><strong>Illustrative review step.</strong> This demo does not provide an attorney, broker, or other professional.</p>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="submittedView">
+        <div class="success-shell">
+          <div class="success-check">✓</div>
+          <p class="eyebrow">Offer EL-1048</p>
+          <h1>The demo has advanced.</h1>
+          <p>No offer was sent and no seller was notified. This browser-only simulation has prepared the next mock workflow screens.</p>
+          <div class="success-steps">
+            <div class="complete"><span>✓</span><strong>Submission simulated</strong><small>Just now</small></div>
+            <div class="active"><span>2</span><strong>Mock seller review</strong><small>Illustrative target: 2 hours</small></div>
+            <div><span>3</span><strong>Mock professional review</strong><small>Shown after demo acceptance</small></div>
+          </div>
+          <div class="success-actions">
+            <button class="primary-button" data-action="seller-review">Open seller review</button>
+            <button class="secondary-button" data-view-link="workspace">View transaction</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="reviewView">
+        <div class="dashboard-shell">
+          <div class="dashboard-header">
+            <div>
+              <p class="eyebrow" id="reviewRoleLabel">Seller offer desk</p>
+              <h1 id="reviewHeading">One new offer, ready to compare.</h1>
+              <p id="reviewSubheading">Sample property · Richmond, VA</p>
+            </div>
+            <div class="sla-chip"><i></i><span><strong>1h 43m</strong> response target remaining</span></div>
+          </div>
+          <div id="reviewDesk"></div>
+        </div>
+      </section>
+
+      <section class="view" id="workspaceView">
+        <div class="dashboard-shell">
+          <div class="transaction-top">
+            <div>
+              <p class="eyebrow">Active transaction · EL-1048</p>
+              <h1 id="workspaceAddress">Your closing, clearly mapped.</h1>
+              <p>This simulation shows shared milestones while keeping mock role details separate.</p>
+            </div>
+            <div class="transaction-status">
+              <span id="workspaceStatus">Offer in review</span>
+              <button class="text-button" data-action="reset-demo">Reset demo</button>
+            </div>
+          </div>
+
+          <div class="workspace-grid">
+            <section class="timeline-card">
+              <div class="card-heading">
+                <div><p class="eyebrow">Closing progress</p><h2 id="timelineTitle">The next move is visible.</h2></div>
+                <span class="progress-number" id="progressNumber">18%</span>
+              </div>
+              <div class="big-progress"><i id="progressBar"></i></div>
+              <div class="timeline-list" id="timelineList"></div>
+            </section>
+
+            <aside class="workspace-side">
+              <section class="side-card next-action-card" id="nextActionCard"></section>
+              <section class="side-card">
+                <div class="card-heading compact">
+                  <div><p class="eyebrow">Activity</p><h3>Audit history</h3></div>
+                  <span class="live-pill">Demo</span>
+                </div>
+                <div class="activity-list" id="activityList"></div>
+              </section>
+              <section class="side-card support-card">
+                <span class="support-avatar">AP</span>
+                <div><strong>Illustrative participants</strong><p>No brokerage, legal, or transaction support is provided.</p></div>
+                <button data-action="disclosure" aria-label="Read demo disclosure">i</button>
+              </section>
+            </aside>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <strong>EscrowLess, Inc. public demonstration</strong>
+      <span>Mock data only. No accounts, submissions, storage, uploads, messages, payments, contracts, or production connections.</span>
+      <span>© 2026 EscrowLess, Inc.</span>
+    </footer>
+
+    <aside class="legal-dock" aria-label="Persistent demo disclosure">
+      <strong>Demonstration only.</strong>
+      <span>No agency, fiduciary, contractual, or professional relationship is created. This site cannot be used for real transactions.</span>
+      <button data-action="disclosure">Full disclosure</button>
+    </aside>
+
+    <dialog class="disclosure-dialog" id="disclosureDialog" aria-labelledby="disclosureTitle">
+      <div class="disclosure-dialog-inner">
+        <p class="eyebrow">Required public demo disclosure</p>
+        <h2 id="disclosureTitle">This is a product demonstration only.</h2>
+        <p>
+          This website uses mock data and simulated workflows. It is not a real
+          estate brokerage, legal service, escrow service, title service,
+          lending service, insurance service, or other professional service.
+        </p>
+        <p>
+          Nothing on this website creates an agency, fiduciary, contractual,
+          attorney-client, broker-client, escrow, title, lending, insurance, or
+          other professional relationship. Nothing shown is legal, financial,
+          real estate, lending, title, escrow, insurance, tax, or investment
+          advice.
+        </p>
+        <p>
+          This demo cannot create accounts, submit or transmit forms, store
+          records, upload files, send notifications or emails, process
+          payments, generate binding contracts, connect to production
+          databases, or be used for any real transaction.
+        </p>
+        <div class="disclosure-facts">
+          <span>Mock listings</span>
+          <span>Mock parties</span>
+          <span>Mock documents</span>
+          <span>Browser memory only</span>
+        </div>
+        <button class="primary-button" data-action="close-disclosure">Enter the read-only demo</button>
+      </div>
+    </dialog>
+
+    <noscript>
+      <div class="noscript-disclosure">
+        Demonstration only. EscrowLess is not providing brokerage, legal,
+        escrow, title, lending, insurance, or other professional services. This
+        site cannot be used for real transactions.
+      </div>
+    </noscript>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="demo-config.js?v=3"></script>
+    <script src="demo-safety.js?v=3"></script>
+    <script src="app.js?v=3"></script>
+  </body>
+</html>
