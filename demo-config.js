@@ -5,6 +5,7 @@ window.ESCROWLESS_CONFIG = Object.freeze({
   environment: "public-demo",
   demoOnly: true,
   mockDataOnly: true,
+  allowTemporaryMockEdits: true,
   features: Object.freeze({
     accountCreation: false,
     authentication: false,
