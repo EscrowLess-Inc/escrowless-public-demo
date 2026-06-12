@@ -1,8 +1,16 @@
 "use strict";
 
 const config = window.ESCROWLESS_CONFIG;
+const sandbox = window.EscrowLessSandbox;
+const agreements = window.ESCROWLESS_AGREEMENTS;
 
-if (config?.environment !== "public-demo" || config?.mockDataOnly !== true || config?.demoOnly !== true) {
+if (
+  config?.environment !== "public-demo" ||
+  config?.publicDemoOnly !== true ||
+  config?.demoOnly !== true ||
+  !sandbox ||
+  !agreements
+) {
   throw new Error("EscrowLess public demo configuration is required.");
 }
 
@@ -123,7 +131,7 @@ const featureCatalog = [
     roles: ["Buyer", "Reviewer"],
     workflow: ["Set financial terms", "Choose protections", "Set deadlines", "Review and route"],
     production: "A production version would use jurisdiction-appropriate workflows and approved document logic.",
-    safety: "The public-demo offer is non-binding, remains in memory only, and cannot be transmitted.",
+    safety: "The public demo offer is non-binding, remains in memory only, and cannot be transmitted.",
   },
   {
     id: "counteroffers",
@@ -156,7 +164,7 @@ const featureCatalog = [
     roles: ["Reviewer / Attorney", "Admin"],
     workflow: ["Open package", "Review exceptions", "Return corrections or approve", "Record decision history"],
     production: "Access would be limited to properly authorized and qualified professionals under an approved operating model.",
-    safety: "The public workflow does not provide legal review or create an attorney-client relationship.",
+    safety: "The public demo workflow does not provide legal review or create an attorney-client relationship.",
   },
   {
     id: "signatures",
@@ -255,18 +263,7 @@ const featureCatalog = [
     roles: ["All transaction roles"],
     workflow: ["Choose permitted recipient", "Select or write message", "Review sensitive content", "Send and record delivery"],
     production: "A production system would enforce permissions, retention, consent, delivery controls, and support escalation.",
-    safety: "No email, text, push notification, or in-platform message can be sent from this lab.",
-  },
-  {
-    id: "admin",
-    category: "platform",
-    title: "Administration, compliance & audit",
-    status: "Planned detail",
-    summary: "Workflow configuration, approvals, role permissions, vendor status, templates, incident handling, and immutable audit.",
-    roles: ["Platform Admin", "Compliance", "Broker leadership"],
-    workflow: ["Configure approved rules", "Manage role access", "Monitor exceptions", "Audit changes and incidents"],
-    production: "High-risk changes would require separation of duties, documented approvals, monitoring, and rollback controls.",
-    safety: "The public-demo admin view changes no system, permission, template, vendor, or record.",
+    safety: "No email, text, push notification, or in-platform message can be sent from this public demo.",
   },
 ];
 
@@ -375,19 +372,6 @@ const roleDefinitions = {
     ],
     next: ["Explore insurance readiness", "Review the proposed quote-to-evidence workflow.", "Open insurance module", "insurance"],
   },
-  admin: {
-    label: "Platform Admin",
-    description: "Configure approved workflows, permissions, templates, vendors, support processes, monitoring, and audit controls.",
-    visibility: ["System configuration and approval state", "Role and vendor permissions", "Operational exceptions and incidents", "Audit history without unnecessary transaction content"],
-    handoffs: ["Compliance approves controlled changes", "Authorized teams resolve incidents", "Production releases follow documented gates"],
-    capabilities: [
-      ["Configure workflows", "Manage approved states, deadlines, and routing rules.", "admin"],
-      ["Control permissions", "Define least-privilege access by role and transaction.", "profiles"],
-      ["Manage vendors", "Track approval, licensing, insurance, and integration status.", "admin"],
-      ["Audit operations", "Review changes, incidents, access, and exception handling.", "admin"],
-    ],
-    next: ["Explore administration", "Open the compliance, configuration, and audit design.", "Open admin module", "admin"],
-  },
 };
 
 const transactionFlow = [
@@ -400,7 +384,7 @@ const transactionFlow = [
   ["earnest", "Earnest money status confirmed", "The deposit milestone is recorded without moving funds.", "Title / Closing"],
   ["inspection", "Inspection resolved", "Inspection findings and the repair-resolution period are complete.", "Inspector"],
   ["appraisal", "Appraisal milestone complete", "The independent valuation status is available to the lender.", "Appraiser"],
-  ["financing", "Clear to close simulated", "Loan conditions are satisfied in the public-demo scenario.", "Lender"],
+  ["financing", "Clear to close simulated", "Loan conditions are satisfied in the public demo scenario.", "Lender"],
   ["title", "Title clear simulated", "Title requirements and settlement preparation are complete.", "Title / Closing"],
   ["insurance", "Insurance evidence ready", "The simulated lender requirement is satisfied.", "Insurance"],
   ["closing_ready", "Closing package ready", "Final documents, figures, walkthrough, and appointment are ready.", "Title / Closing"],
@@ -570,11 +554,11 @@ const milestoneDefinitions = {
       ["Confirm settlement completion", "The closing provider marks the approved signing and funding prerequisites complete.", "Title / closing provider"],
       ["Record and disburse", "Production providers would control recording and authorized disbursement.", "Title / closing provider"],
       ["Deliver keys and final copies", "Parties see permitted completion status and receive approved final documents.", "Seller, title / closing, and broker"],
-      ["Archive and measure", "The transaction file closes with retention status, audit package, analytics, and satisfaction feedback.", "Platform administrator"],
+      ["Archive and measure", "The transaction file closes with retention status, audit package, analytics, and satisfaction feedback.", "EscrowLess operations"],
     ],
     visibility: ["Closing completion", "Recording and disbursement status", "Final-copy delivery", "Archive and audit status"],
     handoffTitle: "The transaction is complete",
-    handoffBody: "The public demo will mark every milestone complete and preserve the path until reset or refresh.",
+    handoffBody: "The public product demo will mark every milestone complete and preserve the path until reset or refresh.",
     safety: "No deed is recorded, no money is disbursed, no keys are delivered, and no legal closing occurs.",
     completionLabel: "Simulate close, recording, and archive",
     nextStage: "closed",
@@ -593,14 +577,53 @@ const milestoneLeadRoles = {
   closed: "title",
 };
 
+const milestoneProviderCalls = {
+  signatures: [["eSignature", "getEnvelopeStatus"]],
+  earnest: [["earnestMoney", "getDepositStatus"]],
+  title: [["titleSettlement", "getTitleStatus"]],
+  closing_ready: [
+    ["remoteNotary", "scheduleNotarization"],
+    ["eClosing", "prepareClosing"],
+  ],
+  closed: [["eRecording", "submitForRecording"]],
+};
+
 const demoState = {
   selectedPropertyId: 1,
+  savedPropertyIds: new Set(),
   currentStep: 1,
   role: "buyer",
   featureFilter: "all",
   stage: "draft",
   activeMilestone: "signatures",
   validationFocusId: "",
+  pendingBuyerAction: "",
+  buyerAgreementAcknowledged: false,
+  sellerAgreementAcknowledged: false,
+  agreementContext: {
+    type: "buyer",
+    mode: "view",
+  },
+  sellerIntakeCompleted: false,
+  buyerIntake: {
+    legalName: "",
+    email: "",
+    phone: "",
+    authority: "",
+    address: "",
+    coBuyers: "",
+  },
+  sellerIntake: {
+    propertyAddress: "",
+    legalName: "",
+    email: "",
+    phone: "",
+    authority: "",
+    coOwners: "",
+    targetPrice: "",
+    visitTime: "",
+    currentlyListed: "",
+  },
   negotiation: {
     turn: "seller",
     mode: "edit",
@@ -622,6 +645,22 @@ const demoState = {
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+
+function audit(action, metadata = {}, outcome = "simulated") {
+  return sandbox.audit.record(action, {
+    actor: demoState.role,
+    outcome,
+    metadata,
+  });
+}
+
+function getFieldValue(id) {
+  return $(`#${id}`)?.value.trim() || "";
+}
+
+function isLikelyEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
 
 function money(value) {
   return new Intl.NumberFormat("en-US", {
@@ -945,6 +984,12 @@ function renderProperties() {
               <span class="image-badge ${property.tag === "Sample facts" ? "verified" : ""}">${property.tag}</span>
             </div>
             <span class="readonly-image-badge" aria-label="Mock listing">Demo</span>
+            <button
+              class="property-save-button ${demoState.savedPropertyIds.has(property.id) ? "saved" : ""}"
+              data-action="favorite"
+              data-property-id="${property.id}"
+              aria-label="${demoState.savedPropertyIds.has(property.id) ? "Remove from" : "Add to"} saved properties"
+            >${demoState.savedPropertyIds.has(property.id) ? "♥" : "♡"}</button>
           </div>
           <div class="property-body">
             <div class="price-row">
@@ -1004,13 +1049,369 @@ function renderPropertyDetail() {
               .join("")}
           </div>
         </div>
-        <div class="detail-actions">
-          <button class="primary-button" data-action="start-offer">Create a digital offer</button>
-          <button class="secondary-button" data-action="tour">Schedule a tour</button>
+        <div class="detail-actions-stack">
+          <div class="detail-actions">
+            <button class="primary-button" data-action="start-offer">Create a digital offer</button>
+            <button class="secondary-button" data-action="tour">Schedule a tour</button>
+          </div>
+          <button class="secondary-button detail-save-button" data-action="favorite" data-property-id="${property.id}">
+            ${demoState.savedPropertyIds.has(property.id) ? "Remove from saved properties" : "Save this property"}
+          </button>
+          <button class="text-button" data-action="list-property">Selling instead? List a property <span>→</span></button>
         </div>
       </div>
     </div>
   `;
+}
+
+function updateSavedCount() {
+  $("#savedCount").textContent = demoState.savedPropertyIds.size;
+}
+
+function toggleSavedProperty(propertyId) {
+  const id = Number(propertyId || demoState.selectedPropertyId);
+  if (demoState.savedPropertyIds.has(id)) {
+    demoState.savedPropertyIds.delete(id);
+    audit("buyer.saved-property.removed", { propertyId: id });
+  } else {
+    demoState.savedPropertyIds.add(id);
+    audit("buyer.saved-property.added", { propertyId: id });
+  }
+  updateSavedCount();
+  renderProperties();
+  renderPropertyDetail();
+  renderSavedProperties();
+  showToast(
+    demoState.savedPropertyIds.has(id)
+      ? "Property saved in temporary browser memory."
+      : "Property removed from the temporary saved list.",
+  );
+}
+
+function renderSavedProperties() {
+  const saved = properties.filter((property) => demoState.savedPropertyIds.has(property.id));
+  $("#emptySavedState").hidden = saved.length > 0;
+  $("#savedPropertyGrid").hidden = saved.length === 0;
+  $("#savedPropertyGrid").innerHTML = saved
+    .map(
+      (property) => `
+        <article class="property-card">
+          <div class="property-image ${property.style}">
+            <div class="image-badges"><span class="image-badge verified">Saved in memory</span></div>
+            <button class="property-save-button saved" data-action="favorite" data-property-id="${property.id}" aria-label="Remove from saved properties">♥</button>
+          </div>
+          <div class="property-body">
+            <div class="price-row"><span class="property-price">${money(property.price)}</span><span class="digital-offer-pill">Demo</span></div>
+            <p class="property-address">${property.address}, ${property.city}</p>
+            <div class="property-meta">
+              <span><strong>${property.beds}</strong> beds</span>
+              <span><strong>${property.baths}</strong> baths</span>
+              <span><strong>${property.sqft}</strong> sq ft</span>
+            </div>
+            <div class="property-footer">
+              <span>Temporary shortlist</span>
+              <button data-action="view-property" data-property-id="${property.id}">View home →</button>
+            </div>
+          </div>
+        </article>
+      `,
+    )
+    .join("");
+}
+
+function openOfferBuilder() {
+  demoState.currentStep = 1;
+  renderOfferProperty();
+  renderStep();
+  goToView("offer");
+}
+
+function renderTour() {
+  const property = getProperty();
+  $("#tourPropertyLabel").textContent = `${property.address}, ${property.city}`;
+}
+
+function collectBuyerIntake() {
+  demoState.buyerIntake = {
+    legalName: getFieldValue("buyerLegalName"),
+    email: getFieldValue("buyerEmail"),
+    phone: getFieldValue("buyerPhone"),
+    authority: getFieldValue("buyerAuthority"),
+    address: getFieldValue("buyerAddress"),
+    coBuyers: getFieldValue("buyerCoBuyers"),
+  };
+  return demoState.buyerIntake;
+}
+
+function validateBuyerIntake() {
+  const intake = collectBuyerIntake();
+  const messages = [];
+  let focusId = "";
+  if (!intake.legalName) {
+    messages.push("Enter the buyer's legal name for this simulation.");
+    focusId ||= "buyerLegalName";
+  }
+  if (!isLikelyEmail(intake.email)) {
+    messages.push("Enter a valid sample email address.");
+    focusId ||= "buyerEmail";
+  }
+  if (!intake.phone) {
+    messages.push("Enter a sample phone number.");
+    focusId ||= "buyerPhone";
+  }
+  if (!intake.authority) {
+    messages.push("Choose whether the person is the buyer or an authorized representative.");
+    focusId ||= "buyerAuthority";
+  }
+  if (!intake.address) {
+    messages.push("Enter a sample current address.");
+    focusId ||= "buyerAddress";
+  }
+  if (messages.length) {
+    showValidation("Complete the buyer intake.", messages, focusId);
+    return false;
+  }
+  return true;
+}
+
+function beginBuyerRepresentationGate(destination) {
+  if (demoState.buyerAgreementAcknowledged) {
+    if (destination === "tour") {
+      renderTour();
+      goToView("tour");
+    } else {
+      openOfferBuilder();
+    }
+    return;
+  }
+  demoState.pendingBuyerAction = destination;
+  audit("buyer.representation-gate.opened", {
+    destination,
+    propertyId: demoState.selectedPropertyId,
+  });
+  $("#buyerIntakeDialog").showModal();
+}
+
+function collectSellerIntake() {
+  demoState.sellerIntake = {
+    propertyAddress: getFieldValue("sellerPropertyAddress"),
+    legalName: getFieldValue("sellerLegalName"),
+    email: getFieldValue("sellerEmail"),
+    phone: getFieldValue("sellerPhone"),
+    authority: getFieldValue("sellerAuthority"),
+    coOwners: getFieldValue("sellerCoOwners"),
+    targetPrice: getFieldValue("sellerTargetPrice"),
+    visitTime: getFieldValue("sellerVisitTime"),
+    currentlyListed: getFieldValue("sellerCurrentlyListed"),
+  };
+  return demoState.sellerIntake;
+}
+
+function validateSellerIntake() {
+  const intake = collectSellerIntake();
+  const messages = [];
+  let focusId = "";
+  if (!intake.propertyAddress) {
+    messages.push("Enter the property address.");
+    focusId ||= "sellerPropertyAddress";
+  }
+  if (!intake.legalName) {
+    messages.push("Enter the seller's legal name.");
+    focusId ||= "sellerLegalName";
+  }
+  if (!isLikelyEmail(intake.email)) {
+    messages.push("Enter a valid sample email address.");
+    focusId ||= "sellerEmail";
+  }
+  if (!intake.phone) {
+    messages.push("Enter a sample phone number.");
+    focusId ||= "sellerPhone";
+  }
+  if (!intake.authority) {
+    messages.push("Choose whether the person is an owner or authorized representative.");
+    focusId ||= "sellerAuthority";
+  }
+  if (!intake.visitTime) {
+    messages.push("Choose a preferred agent-visit window.");
+    focusId ||= "sellerVisitTime";
+  }
+  if (!intake.currentlyListed) {
+    messages.push("Indicate whether the property is currently listed with another broker.");
+    focusId ||= "sellerCurrentlyListed";
+  }
+  if (messages.length) {
+    showValidation("Complete the seller intake.", messages, focusId);
+    return false;
+  }
+  return true;
+}
+
+function renderSellerReviewStatus() {
+  const agreementStatus = demoState.sellerAgreementAcknowledged
+    ? "Mock acknowledgment complete"
+    : "Available to review now or later";
+  $("#sellerReviewStatus").innerHTML = `
+    <article><span>Intake</span><strong>Temporarily completed</strong></article>
+    <article><span>Agreement</span><strong>${agreementStatus}</strong></article>
+    <article><span>Activation</span><strong>Blocked pending licensed broker approval</strong></article>
+  `;
+}
+
+function agreementSummaryItems(type) {
+  if (type === "buyer" && demoState.agreementContext.mode === "sign") {
+    return [
+      ["Demo participant", demoState.buyerIntake.legalName || "Not provided"],
+      ["Property", `${getProperty().address}, ${getProperty().city}`],
+      ["Requested path", demoState.pendingBuyerAction === "tour" ? "Schedule tour" : "Prepare offer"],
+    ];
+  }
+  if (type === "seller" && demoState.agreementContext.mode === "sign") {
+    return [
+      ["Demo participant", demoState.sellerIntake.legalName || "Not provided"],
+      ["Property", demoState.sellerIntake.propertyAddress || "Not provided"],
+      ["Review status", demoState.sellerIntakeCompleted ? "Intake complete" : "Intake in progress"],
+    ];
+  }
+  return [];
+}
+
+function openAgreement(type, mode = "view") {
+  const agreement = agreements[type];
+  if (!agreement) return;
+  demoState.agreementContext = { type, mode };
+  $("#agreementDialogEyebrow").textContent =
+    mode === "sign" ? "Mock representation acknowledgment" : "Representative source template";
+  $("#agreementDialogTitle").textContent =
+    type === "buyer" ? "Exclusive Buyer Brokerage Agreement" : "Exclusive Seller Brokerage Agreement";
+  $("#agreementDocument").innerHTML = agreement.html;
+  $("#agreementMockConsent").checked = false;
+  $("#agreementSignPanel").hidden = mode !== "sign";
+  $("#agreementIntakeSummary").innerHTML = agreementSummaryItems(type)
+    .map(([label, value]) => `<div><span>${label}</span><strong>${escapeHTML(value)}</strong></div>`)
+    .join("");
+  audit("document.representation-agreement.opened", {
+    agreementType: type,
+    mode,
+    sourceFile: agreement.sourceFile,
+  });
+  $("#agreementDialog").showModal();
+}
+
+function mockSignAgreement() {
+  if (!$("#agreementMockConsent").checked) {
+    showValidation(
+      "Acknowledge the simulation first.",
+      ["Confirm that the mock-sign control does not create or execute a real agreement."],
+      "agreementMockConsent",
+    );
+    return;
+  }
+
+  const type = demoState.agreementContext.type;
+  const result = sandbox.providers.invoke("eSignature", "createEnvelope", {
+    actor: demoState.role,
+    documentType: `${type}-representation-agreement`,
+    mockOnly: true,
+  });
+  audit("document.representation-agreement.mock-acknowledged", {
+    agreementType: type,
+    simulationId: result.simulationId,
+  });
+  $("#agreementDialog").close();
+
+  if (type === "buyer") {
+    demoState.buyerAgreementAcknowledged = true;
+    const destination = demoState.pendingBuyerAction;
+    demoState.pendingBuyerAction = "";
+    showToast("Mock buyer representation acknowledgment complete. No signature or contract was created.");
+    if (destination === "tour") {
+      renderTour();
+      goToView("tour");
+    } else {
+      openOfferBuilder();
+    }
+    return;
+  }
+
+  demoState.sellerAgreementAcknowledged = true;
+  renderSellerReviewStatus();
+  showToast("Mock seller representation acknowledgment complete. No signature or contract was created.");
+  if (demoState.sellerIntakeCompleted) goToView("sellerReview");
+}
+
+function submitSellerForReview() {
+  if (!validateSellerIntake()) return;
+  const result = sandbox.providers.invoke("documentVault", "storeDocument", {
+    actor: "seller",
+    documentType: "seller-intake-summary",
+    memoryOnly: true,
+  });
+  demoState.sellerIntakeCompleted = true;
+  audit("seller.intake.submitted-for-mock-review", {
+    simulationId: result.simulationId,
+    agreementAcknowledged: demoState.sellerAgreementAcknowledged,
+    currentlyListed: demoState.sellerIntake.currentlyListed,
+  });
+  renderSellerReviewStatus();
+  goToView("sellerReview");
+}
+
+function previewContactMessage() {
+  const name = getFieldValue("contactName");
+  const email = getFieldValue("contactEmail");
+  const topic = getFieldValue("contactTopic");
+  const message = getFieldValue("contactMessage");
+  const messages = [];
+  let focusId = "";
+  if (!name) {
+    messages.push("Enter your name.");
+    focusId ||= "contactName";
+  }
+  if (!isLikelyEmail(email)) {
+    messages.push("Enter a valid email address.");
+    focusId ||= "contactEmail";
+  }
+  if (!topic) {
+    messages.push("Choose a message topic.");
+    focusId ||= "contactTopic";
+  }
+  if (!message) {
+    messages.push("Enter a question, comment, or concern.");
+    focusId ||= "contactMessage";
+  }
+  if (!$("#contactConsent").checked) {
+    messages.push("Acknowledge that the public demo will not send this message.");
+    focusId ||= "contactConsent";
+  }
+  if (messages.length) {
+    showValidation("Complete the contact preview.", messages, focusId);
+    return;
+  }
+
+  const result = sandbox.providers.invoke("contactDelivery", "sendContactMessage", {
+    actor: "visitor",
+    name,
+    email,
+    topic,
+    message,
+  });
+  audit("contact.message.previewed", {
+    topic,
+    simulationId: result.simulationId,
+    delivered: result.delivered,
+  });
+  showInfoDialog({
+    eyebrow: "Contact workflow preview",
+    title: "Your message was not sent.",
+    body: "The mock adapter validated the workflow without delivering or storing any contact information.",
+    details: [
+      ["Future destination", "EscrowLess, Inc. contact inbox after privacy, security, spam-control, and email-provider approval."],
+      ["Current provider", "Mock contact-delivery adapter."],
+      ["Delivery status", "Disabled. No email, notification, database write, or analytics event occurred."],
+      ["Next production gate", "Approve contact disclosures, retention, response ownership, abuse controls, and a transactional-email provider."],
+    ],
+    actionLabel: "Return to contact page",
+  });
 }
 
 function renderOfferProperty() {
@@ -1084,7 +1485,7 @@ function openFeature(featureId) {
       ["Production purpose", feature.production],
       ["Typical workflow", feature.workflow.join(" → ")],
       ["Participating roles", feature.roles.join(", ")],
-      ["Public-demo boundary", feature.safety],
+      ["Demo boundary", feature.safety],
     ],
     actionLabel: "Continue exploring",
   });
@@ -1386,7 +1787,7 @@ function renderDeed() {
       <span>4</span>
       <div>
         <h2>Title and Recording Status</h2>
-        <p>The public-demo timeline has marked the transaction “closed” solely for demonstration.
+        <p>The public demo timeline has marked the transaction “closed” solely for demonstration.
         No title examination, deed preparation, execution, acknowledgment, delivery, recording,
         tax assessment, or governmental filing has occurred.</p>
       </div>
@@ -1477,6 +1878,7 @@ function goToView(name) {
     link.classList.toggle("active", link.dataset.viewLink === name);
   });
   window.scrollTo({ top: 0, behavior: "instant" });
+  audit("ui.view.opened", { view: name });
   if (name === "review") renderReviewDesk();
   if (name === "negotiation") renderNegotiation();
   if (name === "workspace") renderWorkspace();
@@ -1485,6 +1887,9 @@ function goToView(name) {
   if (name === "milestone") renderMilestone();
   if (name === "role") renderRoleWorkspace();
   if (name === "features") renderFeatureExplorer();
+  if (name === "saved") renderSavedProperties();
+  if (name === "tour") renderTour();
+  if (name === "sellerReview") renderSellerReviewStatus();
 }
 
 function renderReviewDesk() {
@@ -1697,19 +2102,23 @@ function renderWorkspace() {
       <button class="primary-button" data-action="workspace-next" data-destination="${nextAction[3]}">${nextAction[2]}</button>
     `;
 
-  const activities = [["Profile and identity demo completed", "Buyer role · Earlier today"]];
-  if (currentIndex > 0) {
-    transactionFlow.slice(1, currentIndex + 1).forEach(([, title, , owner]) => {
-      activities.push([title, `${owner} · Simulated`]);
-    });
-  }
+  const activities = sandbox.audit.list().slice(0, 8);
   $("#activityList").innerHTML = activities
-    .reverse()
-    .map(
-      ([title, meta]) => `
-        <div class="activity"><i></i><div><strong>${title}</strong><small>${meta}</small></div></div>
-      `,
-    )
+    .map((entry) => {
+      const time = new Date(entry.timestamp).toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit",
+      });
+      return `
+        <div class="activity">
+          <i></i>
+          <div>
+            <strong>${escapeHTML(entry.action.replaceAll(".", " "))}</strong>
+            <small>${escapeHTML(entry.actor)} · ${time} · ${escapeHTML(entry.outcome)}</small>
+          </div>
+        </div>
+      `;
+    })
     .join("");
 }
 
@@ -1722,6 +2131,8 @@ function showToast(message) {
 }
 
 function resetDemo() {
+  sandbox.memory.clear();
+  sandbox.audit.clear();
   demoState.currentStep = 1;
   demoState.role = "buyer";
   demoState.stage = "draft";
@@ -1733,6 +2144,30 @@ function resetDemo() {
   demoState.negotiation.history = [];
   demoState.negotiation.draft = null;
   demoState.selectedPropertyId = 1;
+  demoState.savedPropertyIds.clear();
+  demoState.pendingBuyerAction = "";
+  demoState.buyerAgreementAcknowledged = false;
+  demoState.sellerAgreementAcknowledged = false;
+  demoState.sellerIntakeCompleted = false;
+  demoState.buyerIntake = {
+    legalName: "",
+    email: "",
+    phone: "",
+    authority: "",
+    address: "",
+    coBuyers: "",
+  };
+  demoState.sellerIntake = {
+    propertyAddress: "",
+    legalName: "",
+    email: "",
+    phone: "",
+    authority: "",
+    coOwners: "",
+    targetPrice: "",
+    visitTime: "",
+    currentlyListed: "",
+  };
   demoState.offer.price = 612000;
   demoState.offer.financing = "Conventional loan";
   demoState.offer.downPayment = "20";
@@ -1749,12 +2184,45 @@ function resetDemo() {
   });
   $("#roleSelect").value = "buyer";
   $("#reviewConsent").checked = false;
+  [
+    "buyerLegalName",
+    "buyerEmail",
+    "buyerPhone",
+    "buyerAuthority",
+    "buyerAddress",
+    "buyerCoBuyers",
+    "sellerPropertyAddress",
+    "sellerLegalName",
+    "sellerEmail",
+    "sellerPhone",
+    "sellerAuthority",
+    "sellerCoOwners",
+    "sellerTargetPrice",
+    "sellerVisitTime",
+    "sellerCurrentlyListed",
+    "contactName",
+    "contactEmail",
+    "contactPhone",
+    "contactTopic",
+    "contactMessage",
+    "tourDay",
+    "tourTime",
+  ].forEach((id) => {
+    const field = $(`#${id}`);
+    if (field) field.value = "";
+  });
+  $("#contactConsent").checked = false;
   renderOfferProperty();
+  renderProperties();
+  renderPropertyDetail();
+  renderSavedProperties();
+  renderSellerReviewStatus();
+  updateSavedCount();
   renderStep();
   renderWorkspace();
   renderRoleWorkspace();
   renderFeatureExplorer();
-  goToView("discover");
+  goToView("home");
   showToast("The public simulation has been reset. No records were stored.");
 }
 
@@ -1763,18 +2231,34 @@ document.addEventListener("click", (event) => {
   const viewButton = event.target.closest("[data-view-link]");
 
   if (viewButton) {
+    audit("ui.navigation.requested", { destination: viewButton.dataset.viewLink });
     goToView(viewButton.dataset.viewLink);
     return;
   }
 
   if (!actionButton) return;
   const action = actionButton.dataset.action;
+  audit("ui.action.selected", {
+    action,
+    propertyId: actionButton.dataset.propertyId || null,
+  });
 
-  if (action === "home" || action === "back-to-homes") goToView("discover");
+  if (action === "home") goToView("home");
+  if (action === "back-to-homes") goToView("discover");
   if (action === "back-to-property") goToView("property");
+  if (action === "choose-buy") {
+    setDemoRole("buyer");
+    goToView("discover");
+  }
+  if (action === "choose-list" || action === "list-property") {
+    setDemoRole("seller");
+    goToView("seller");
+  }
   if (action === "disclosure") $("#disclosureDialog").showModal();
   if (action === "close-disclosure") $("#disclosureDialog").close();
   if (action === "close-info") $("#infoDialog").close();
+  if (action === "close-buyer-intake") $("#buyerIntakeDialog").close();
+  if (action === "close-agreement") $("#agreementDialog").close();
   if (action === "close-validation") {
     $("#validationDialog").close();
     const focusTarget = demoState.validationFocusId ? $(`#${demoState.validationFocusId}`) : null;
@@ -1782,13 +2266,17 @@ document.addEventListener("click", (event) => {
   }
   if (action === "search") {
     const term = $("#propertySearch").value.trim() || "all demo areas";
-    showToast(`Showing public-demo sample results for ${term}. No listing service was searched.`);
+    sandbox.providers.invoke("listings", "searchListings", {
+      actor: "buyer",
+      criteria: "public-demo-sample-catalog",
+    });
+    showToast(`Showing public sample results for ${term}. No listing service was searched.`);
   }
   if (action === "explain") openFeature("offers");
   if (action === "filter") {
     actionButton.closest(".filter-row")?.querySelectorAll(".filter").forEach((button) => button.classList.remove("active"));
     actionButton.classList.add("active");
-    showToast(`${actionButton.dataset.filter} applied to the three public-demo sample homes.`);
+    showToast(`${actionButton.dataset.filter} applied to the three public sample homes.`);
   }
   if (action === "more-filters") {
     showInfoDialog({
@@ -1799,7 +2287,7 @@ document.addEventListener("click", (event) => {
         ["Property", "Price, beds, baths, home type, square footage, acreage, age, parking, accessibility, and features."],
         ["Location", "City, ZIP, neighborhood, school preference, commute radius, map area, and flood-zone indicators."],
         ["Transaction", "Days listed, open houses, digital-offer readiness, seller concessions, and closing flexibility."],
-        ["Demo behavior", "This prototype filters only the fixed sample catalog."],
+        ["Public demo behavior", "This prototype would filter only the fixed local sample catalog."],
       ],
     });
   }
@@ -1811,7 +2299,7 @@ document.addEventListener("click", (event) => {
   }
   if (action === "open-feature") openFeature(actionButton.dataset.featureId);
   if (action === "favorite") {
-    openFeature("search");
+    toggleSavedProperty(actionButton.dataset.propertyId);
   }
   if (action === "view-property") {
     demoState.selectedPropertyId = Number(actionButton.dataset.propertyId);
@@ -1821,12 +2309,85 @@ document.addEventListener("click", (event) => {
     goToView("property");
   }
   if (action === "start-offer") {
-    demoState.currentStep = 1;
-    renderOfferProperty();
-    renderStep();
-    goToView("offer");
+    beginBuyerRepresentationGate("offer");
   }
-  if (action === "tour") openFeature("tours");
+  if (action === "tour") beginBuyerRepresentationGate("tour");
+  if (action === "continue-buyer-agreement") {
+    if (validateBuyerIntake()) {
+      sandbox.providers.invoke("identity", "beginVerification", {
+        actor: "buyer",
+        purpose: demoState.pendingBuyerAction,
+        mockOnly: true,
+      });
+      $("#buyerIntakeDialog").close();
+      openAgreement("buyer", "sign");
+    }
+  }
+  if (action === "view-buyer-agreement") openAgreement("buyer", "view");
+  if (action === "view-seller-agreement") openAgreement("seller", "view");
+  if (action === "mock-sign-agreement") mockSignAgreement();
+  if (action === "seller-sign-agreement") {
+    if (demoState.sellerIntakeCompleted || validateSellerIntake()) {
+      collectSellerIntake();
+      openAgreement("seller", "sign");
+    }
+  }
+  if (action === "seller-submit-review") submitSellerForReview();
+  if (action === "seller-photo-concept") {
+    showInfoDialog({
+      eyebrow: "Seller photo workflow",
+      title: "Property photo upload is disabled.",
+      body: "A production listing intake could accept photos only after secure authentication, consent, malware scanning, metadata handling, storage, access, and retention controls are approved.",
+      details: [
+        ["Current behavior", "No file picker opens and no local file can be read."],
+        ["Future access", "Seller and specifically authorized brokerage or listing roles."],
+        ["Review gate", "Photos remain unpublished until ownership, content rights, fair-housing, and broker approval checks pass."],
+        ["Provider status", "Document-vault adapter is mock and persistence is disabled."],
+      ],
+    });
+  }
+  if (action === "complete-tour") {
+    const tourDay = getFieldValue("tourDay");
+    const tourTime = getFieldValue("tourTime");
+    const messages = [];
+    let focusId = "";
+    if (!tourDay) {
+      messages.push("Choose a sample tour day.");
+      focusId ||= "tourDay";
+    }
+    if (!tourTime) {
+      messages.push("Choose a sample time window.");
+      focusId ||= "tourTime";
+    }
+    if (messages.length) {
+      showValidation("Choose a tour preference.", messages, focusId);
+    } else {
+      audit("buyer.tour.request.simulated", {
+        propertyId: demoState.selectedPropertyId,
+        tourType: getFieldValue("tourType"),
+        tourDay,
+        tourTime,
+      });
+      showInfoDialog({
+        eyebrow: "Tour workflow simulated",
+        title: "No appointment was created.",
+        body: "The demo has shown how an agreement-gated tour request could proceed into licensed-agent and property-access coordination.",
+        details: [
+          ["Property", `${getProperty().address}, ${getProperty().city}`],
+          ["Preference", `${tourDay}, ${tourTime}`],
+          ["Representation gate", "Mock buyer acknowledgment complete."],
+          ["Real-world effects", "No calendar event, access request, message, or showing instruction was created."],
+        ],
+        actionLabel: "Return to the property",
+      });
+      $("#infoDialogActions").innerHTML = '<button class="primary-button" data-action="return-to-property">Return to the property</button>';
+    }
+  }
+  if (action === "return-to-property") {
+    $("#infoDialog").close();
+    goToView("property");
+  }
+  if (action === "preview-contact") previewContactMessage();
   if (action === "preview-upload") {
     showInfoDialog({
       eyebrow: "Secure-document concept",
@@ -1836,7 +2397,7 @@ document.addEventListener("click", (event) => {
         ["Buyer sees", "Requested document type, purpose, recipient, expiration, and sharing permissions."],
         ["Seller sees", "Only the approved status or permitted summary needed to evaluate the offer."],
         ["Production safeguard", "Encrypted upload, malware scanning, access logging, retention controls, and redaction."],
-        ["Demo behavior", "No file picker opens and no file can be read, copied, or transmitted."],
+        ["Public demo behavior", "No file picker opens and no file can be read, copied, or transmitted."],
       ],
     });
   }
@@ -1877,7 +2438,7 @@ document.addEventListener("click", (event) => {
         ["Flagged item", "Included personal-property language needs confirmation and approved treatment."],
         ["Assigned role", "Buyer and seller roles review the proposed correction."],
         ["Version control", "The original package remains visible while a corrected version is prepared."],
-        ["Demo behavior", "No party is contacted and no legal document is changed."],
+        ["Public demo behavior", "No party is contacted and no legal document is changed."],
       ],
     });
   }
@@ -1919,7 +2480,18 @@ document.addEventListener("click", (event) => {
   if (action === "complete-milestone") {
     const milestone = milestoneDefinitions[demoState.activeMilestone];
     if (!milestone) return;
+    (milestoneProviderCalls[demoState.activeMilestone] || []).forEach(([provider, method]) => {
+      sandbox.providers.invoke(provider, method, {
+        actor: demoState.role,
+        transactionId: "EL-1048-DEMO",
+        mockOnly: true,
+      });
+    });
     demoState.stage = milestone.nextStage;
+    audit("transaction.milestone.completed", {
+      milestone: demoState.activeMilestone,
+      nextStage: demoState.stage,
+    });
     if (demoState.stage === "closed") {
       setDemoRole("buyer");
     } else {
@@ -1931,7 +2503,7 @@ document.addEventListener("click", (event) => {
     showToast(
       demoState.stage === "closed"
         ? "The simulated transaction is closed, recorded, and archived."
-        : `${getStageDefinition()[1]} recorded in the public-demo timeline.`,
+        : `${getStageDefinition()[1]} recorded in the public demo timeline.`,
     );
   }
   if (action === "reset-demo") resetDemo();
@@ -1939,6 +2511,7 @@ document.addEventListener("click", (event) => {
 
 $("#roleSelect").addEventListener("change", (event) => {
   demoState.role = event.target.value;
+  audit("role.changed", { role: demoState.role });
   renderRoleWorkspace();
   goToView("role");
 });
@@ -1954,17 +2527,29 @@ $("#offerForm").addEventListener("input", (event) => {
 $("#nextStep").addEventListener("click", () => {
   if (!validateCurrentOfferStep()) return;
   if (demoState.currentStep < 4) {
+    audit("buyer.offer.step.completed", { step: demoState.currentStep });
     demoState.currentStep += 1;
     renderStep();
     return;
   }
   updateOfferFromForm();
+  const documentResult = sandbox.providers.invoke("documentVault", "storeDocument", {
+    actor: "buyer",
+    documentType: "mock-offer-package",
+    memoryOnly: true,
+  });
   demoState.stage = "submitted";
   initializeNegotiation();
+  audit("buyer.offer.submission.simulated", {
+    propertyId: demoState.selectedPropertyId,
+    simulationId: documentResult.simulationId,
+    offerPrice: demoState.offer.price,
+  });
   goToView("submitted");
 });
 
 $("#previousStep").addEventListener("click", () => {
+  audit("buyer.offer.step.returned", { step: demoState.currentStep });
   demoState.currentStep = Math.max(1, demoState.currentStep - 1);
   renderStep();
 });
@@ -1972,10 +2557,13 @@ $("#previousStep").addEventListener("click", () => {
 setDefaultDates();
 renderProperties();
 renderPropertyDetail();
+renderSavedProperties();
 renderOfferProperty();
 renderStep();
 renderWorkspace();
 renderRoleWorkspace();
 renderFeatureExplorer();
+renderSellerReviewStatus();
+updateSavedCount();
 
 $("#disclosureDialog").showModal();

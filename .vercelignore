@@ -8,3 +8,11 @@ README.md
 netlify.toml
 production-config.example.js
 _headers
+admin.html
+admin.js
+admin.css
+*Vendor Admin*
+PROVIDER_ADAPTERS.md
+PUBLIC_DEPLOYMENT_ALLOWLIST.md
+PARTNERSHIP_GATES.md
+STAKEHOLDER_DISCOVERY.md

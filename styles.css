@@ -3767,3 +3767,678 @@ h3 {
     font-size: 9px;
   }
 }
+
+/* Version 4: entry paths, representation gates, and sandbox workflows */
+
+.saved-header-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink-soft);
+  background: white;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.saved-header-button strong {
+  display: grid;
+  place-items: center;
+  min-width: 21px;
+  height: 21px;
+  border-radius: 50%;
+  color: white;
+  background: var(--teal);
+  font-size: 10px;
+}
+
+.choice-home {
+  width: min(100% - 40px, 1100px);
+  margin: 0 auto;
+  padding: 90px 0 110px;
+}
+
+.choice-home-copy {
+  max-width: 720px;
+  margin: 0 auto 45px;
+  text-align: center;
+}
+
+.choice-home h1,
+.saved-shell h1 {
+  margin: 8px 0 16px;
+  color: var(--navy);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(42px, 6vw, 70px);
+  font-weight: 500;
+  letter-spacing: -0.045em;
+  line-height: 1.03;
+}
+
+.choice-home-copy > p:last-child {
+  margin: 0 auto;
+  color: var(--ink-soft);
+  font-size: 17px;
+  line-height: 1.75;
+}
+
+.choice-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.journey-card {
+  position: relative;
+  display: grid;
+  min-height: 360px;
+  padding: 38px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  text-align: left;
+  box-shadow: var(--shadow-soft);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.journey-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow);
+}
+
+.buyer-journey {
+  color: white;
+  background:
+    radial-gradient(circle at 80% 15%, rgba(93, 208, 195, 0.36), transparent 35%),
+    linear-gradient(145deg, #0b2b3d, #174e5a);
+}
+
+.seller-journey {
+  color: var(--navy);
+  background:
+    radial-gradient(circle at 78% 18%, rgba(191, 143, 66, 0.22), transparent 36%),
+    linear-gradient(145deg, #fffdf8, #efe6d5);
+}
+
+.journey-number {
+  position: absolute;
+  top: 26px;
+  right: 30px;
+  opacity: 0.45;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 36px;
+}
+
+.journey-icon {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  margin-bottom: 48px;
+  border: 1px solid currentColor;
+  border-radius: 18px;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.journey-card strong {
+  align-self: end;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 35px;
+  font-weight: 500;
+  letter-spacing: -0.035em;
+}
+
+.journey-card small {
+  margin-top: 14px;
+  opacity: 0.82;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.journey-card em {
+  margin-top: 25px;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.home-support-row {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-top: 30px;
+}
+
+.section-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.property-save-button {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  color: var(--navy);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 5px 18px rgba(12, 38, 55, 0.15);
+  font-size: 19px;
+}
+
+.property-save-button.saved {
+  color: white;
+  border-color: var(--teal);
+  background: var(--teal);
+}
+
+.detail-actions-stack {
+  display: grid;
+  gap: 12px;
+  margin-top: 26px;
+}
+
+.detail-actions-stack .detail-actions {
+  margin-top: 0;
+}
+
+.detail-save-button {
+  width: 100%;
+}
+
+.saved-shell {
+  min-height: 70vh;
+}
+
+.empty-saved-state {
+  max-width: 600px;
+  margin: 60px auto;
+  padding: 55px 30px;
+  border: 1px dashed var(--line-dark);
+  border-radius: 24px;
+  text-align: center;
+  background: white;
+}
+
+.empty-saved-state[hidden] {
+  display: none;
+}
+
+.empty-saved-state > span {
+  color: var(--teal);
+  font-size: 50px;
+}
+
+.empty-saved-state h2 {
+  margin: 12px 0 8px;
+}
+
+.empty-saved-state p {
+  margin: 0 0 25px;
+  color: var(--ink-soft);
+}
+
+.seller-intake-shell {
+  padding-bottom: 90px;
+}
+
+.seller-intake-grid,
+.tour-grid,
+.contact-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(280px, 0.75fr);
+  align-items: start;
+  gap: 28px;
+}
+
+.seller-intake-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.listing-gate-list {
+  display: grid;
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.listing-gate-list p {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.listing-gate-list i {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: var(--teal-dark);
+  background: var(--teal-pale);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.seller-review-shell {
+  max-width: 860px;
+}
+
+.seller-review-status {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+  margin: 30px 0;
+}
+
+.seller-review-status article {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  text-align: left;
+  background: white;
+}
+
+.seller-review-status span {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--teal-dark);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.seller-review-status strong {
+  font-size: 13px;
+}
+
+.agreement-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  margin-top: 42px;
+}
+
+.agreement-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 310px;
+  padding: 34px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: white;
+  box-shadow: var(--shadow-soft);
+}
+
+.agreement-card-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 26px;
+  border-radius: 15px;
+  color: white;
+  background: var(--navy);
+  font-weight: 900;
+}
+
+.agreement-card h2 {
+  margin: 4px 0 12px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 29px;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+}
+
+.agreement-card > p:not(.eyebrow) {
+  flex: 1;
+  color: var(--ink-soft);
+  line-height: 1.65;
+}
+
+.agreement-card .primary-button {
+  align-self: flex-start;
+}
+
+.agreement-library-warning {
+  margin-top: 28px;
+}
+
+.contact-shell {
+  padding-bottom: 90px;
+}
+
+.buyer-intake-dialog,
+.agreement-dialog {
+  width: min(100% - 28px, 760px);
+  max-height: calc(100vh - 34px);
+  padding: 0;
+  overflow: auto;
+  border: 0;
+  border-radius: 24px;
+  background: white;
+  box-shadow: 0 28px 90px rgba(4, 20, 31, 0.3);
+}
+
+.agreement-dialog {
+  width: min(100% - 28px, 1050px);
+}
+
+.buyer-intake-dialog::backdrop,
+.agreement-dialog::backdrop {
+  background: rgba(7, 25, 37, 0.76);
+  backdrop-filter: blur(4px);
+}
+
+.buyer-intake-dialog-inner {
+  position: relative;
+  padding: 38px;
+}
+
+.buyer-intake-dialog h2 {
+  max-width: 620px;
+  margin: 7px 0 12px;
+  color: var(--navy);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 34px;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+
+.buyer-intake-dialog-inner > p:not(.eyebrow) {
+  margin-bottom: 26px;
+  color: var(--ink-soft);
+  line-height: 1.65;
+}
+
+.buyer-intake-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.agreement-dialog-inner {
+  padding: 28px;
+}
+
+.agreement-dialog-toolbar {
+  position: sticky;
+  z-index: 3;
+  top: -28px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin: -28px -28px 0;
+  padding: 24px 28px 18px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(10px);
+}
+
+.agreement-dialog-toolbar h2 {
+  margin: 4px 0 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 27px;
+  font-weight: 500;
+}
+
+.agreement-demo-warning {
+  display: grid;
+  gap: 8px;
+  margin: 25px 0 18px;
+  padding: 18px 20px;
+  border: 2px solid #cc574f;
+  border-radius: 13px;
+  color: #762a26;
+  background: #fff3f1;
+}
+
+.agreement-demo-warning strong {
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+.agreement-demo-warning span {
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.agreement-intake-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.agreement-intake-summary:empty {
+  display: none;
+}
+
+.agreement-intake-summary div {
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--cream);
+}
+
+.agreement-intake-summary span {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--ink-soft);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.agreement-intake-summary strong {
+  font-size: 12px;
+}
+
+.source-agreement-document {
+  position: relative;
+  padding: 54px 58px;
+  border: 1px solid #d5d0c7;
+  color: #171717;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.96)),
+    repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(0, 0, 0, 0.025) 28px);
+  box-shadow: 0 10px 30px rgba(18, 38, 58, 0.08);
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.source-agreement-document::before {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  content: "DEMO · NOT BINDING";
+  color: rgba(176, 57, 50, 0.07);
+  font-family: Arial, sans-serif;
+  font-size: clamp(38px, 8vw, 92px);
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  transform: rotate(-31deg);
+}
+
+.source-agreement-document > * {
+  position: relative;
+  z-index: 1;
+}
+
+.source-agreement-title {
+  margin: 0 0 6px;
+  text-align: center;
+  font-size: 24px;
+  line-height: 1.25;
+}
+
+.source-agreement-subtitle {
+  margin: 0 0 28px !important;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.source-agreement-heading {
+  margin: 27px 0 9px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #bcb6aa;
+  font-size: 16px;
+  line-height: 1.3;
+}
+
+.source-agreement-document p {
+  margin: 8px 0;
+  font-size: 12px;
+  line-height: 1.62;
+}
+
+.source-agreement-lines {
+  margin: 10px 0 14px;
+  padding-left: 18px;
+  border-left: 2px solid #d8d2c7;
+}
+
+.source-agreement-lines p {
+  margin: 4px 0;
+}
+
+.agreement-sign-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 20px;
+  margin-top: 22px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--teal-pale);
+}
+
+.agreement-sign-panel[hidden] {
+  display: none;
+}
+
+.agreement-close-bottom {
+  display: block;
+  margin: 18px 0 0 auto;
+}
+
+@media (max-width: 1180px) {
+  .site-header {
+    grid-template-columns: auto 1fr auto;
+    padding-right: 2vw;
+    padding-left: 2vw;
+  }
+
+  nav {
+    gap: 16px;
+    overflow-x: auto;
+    padding: 0 10px;
+  }
+
+  .nav-link {
+    flex: 0 0 auto;
+    font-size: 11px;
+  }
+
+  .saved-header-button {
+    display: none;
+  }
+}
+
+@media (max-width: 980px) {
+  nav {
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding: 0 22px;
+  }
+
+  .seller-intake-grid,
+  .tour-grid,
+  .contact-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .choice-home {
+    width: min(100% - 28px, 1100px);
+    padding: 58px 0 80px;
+  }
+
+  .choice-card-grid,
+  .agreement-card-grid,
+  .seller-review-status,
+  .agreement-intake-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .journey-card {
+    min-height: 320px;
+    padding: 28px;
+  }
+
+  .journey-icon {
+    margin-bottom: 32px;
+  }
+
+  .home-support-row,
+  .section-heading-actions,
+  .seller-intake-actions,
+  .buyer-intake-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .section-heading-actions {
+    margin-top: 18px;
+  }
+
+  .buyer-intake-dialog-inner,
+  .agreement-dialog-inner {
+    padding: 22px;
+  }
+
+  .agreement-dialog-toolbar {
+    top: -22px;
+    margin: -22px -22px 0;
+    padding: 20px 22px 16px;
+  }
+
+  .source-agreement-document {
+    padding: 34px 22px;
+  }
+
+  .agreement-sign-panel {
+    grid-template-columns: 1fr;
+  }
+}

@@ -6,7 +6,11 @@
 
   if (
     config?.environment !== "public-demo" ||
+    config?.publicDemoOnly !== true ||
     config?.demoOnly !== true ||
+    config?.mockDataOnly !== true ||
+    config?.allowMockProviderCalls !== true ||
+    config?.realWorldEffectsDisabled !== true ||
     Object.values(features).some(Boolean)
   ) {
     throw new Error("Public demo safety configuration is invalid.");
@@ -51,6 +55,17 @@
     "drop",
     (event) => {
       event.preventDefault();
+    },
+    true,
+  );
+
+  document.addEventListener(
+    "change",
+    (event) => {
+      if (event.target instanceof HTMLInputElement && event.target.type === "file") {
+        event.target.value = "";
+        throw new Error("File selection is disabled in the public demo.");
+      }
     },
     true,
   );
