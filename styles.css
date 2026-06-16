@@ -14,6 +14,16 @@
   --gold: #bf8f42;
   --green: #268268;
   --red: #b74e4e;
+  --gradient-buy: linear-gradient(135deg, #18d7d2 0%, #087ac2 48%, #052e77 100%);
+  --gradient-sell: linear-gradient(135deg, #ffe873 0%, #ffb32e 46%, #c84d10 100%);
+  --gradient-submit: linear-gradient(135deg, #35e86b 0%, #06c6b8 45%, #0548a6 100%);
+  --gradient-signature:
+    radial-gradient(circle at 88% 10%, rgba(105, 86, 255, 0.5), transparent 30%),
+    linear-gradient(135deg, #061a36 0%, #191f60 56%, #4b236f 100%);
+  --gradient-correction: linear-gradient(135deg, #b9362e 0%, #ec711e 54%, #f2ae32 100%);
+  --gradient-accept: linear-gradient(135deg, #95f5ad 0%, #1d9b59 44%, #053f27 100%);
+  --green-rich: #053f27;
+  --amber: #d58a18;
   --shadow: 0 18px 50px rgba(12, 38, 55, 0.1);
   --shadow-soft: 0 8px 28px rgba(12, 38, 55, 0.08);
   --radius: 18px;
@@ -392,15 +402,15 @@ h3 {
 }
 
 .primary-button {
-  border: 1px solid var(--teal);
+  border: 1px solid rgba(8, 122, 194, 0.55);
   color: white;
-  background: var(--teal);
-  box-shadow: 0 8px 20px rgba(28, 139, 130, 0.2);
+  background: var(--gradient-buy);
+  box-shadow: 0 10px 24px rgba(8, 122, 194, 0.24);
 }
 
 .primary-button:hover {
-  border-color: var(--teal-dark);
-  background: var(--teal-dark);
+  border-color: rgba(24, 215, 210, 0.82);
+  filter: saturate(1.08) brightness(1.03);
   transform: translateY(-1px);
 }
 
@@ -419,6 +429,109 @@ h3 {
 .secondary-button:hover {
   border-color: var(--teal);
   color: var(--teal-dark);
+}
+
+.cancel-button,
+.reject-button,
+button[data-action="reject-offer"] {
+  border-color: rgba(183, 78, 78, 0.75);
+  color: white;
+  background: #c92f35;
+  box-shadow: 0 9px 22px rgba(201, 47, 53, 0.18);
+}
+
+.cancel-button:hover,
+.reject-button:hover,
+button[data-action="reject-offer"]:hover {
+  border-color: #a71f26;
+  color: white;
+  background: #a71f26;
+}
+
+button[data-action="mock-sign-agreement"] {
+  border-color: rgba(105, 86, 255, 0.55);
+  background: var(--gradient-signature);
+  box-shadow: 0 12px 28px rgba(25, 31, 96, 0.26);
+}
+
+button[data-action="mock-sign-agreement"]:hover {
+  color: white;
+  filter: saturate(1.06) brightness(1.04);
+}
+
+button[data-action="accept-offer"],
+button[data-action="accept-counter"] {
+  border-color: rgba(5, 63, 39, 0.85);
+  background: var(--gradient-accept);
+  box-shadow: 0 10px 24px rgba(5, 63, 39, 0.24);
+}
+
+button[data-action="accept-offer"]:hover,
+button[data-action="accept-counter"]:hover {
+  border-color: var(--green-rich);
+  color: white;
+}
+
+button[data-action="counter-offer"],
+button[data-action="counter-back"],
+button[data-action="submit-counter"] {
+  border-color: rgba(213, 138, 24, 0.9);
+  color: #241606;
+  background: linear-gradient(135deg, #ffd768 0%, var(--amber) 100%);
+  box-shadow: 0 9px 22px rgba(213, 138, 24, 0.2);
+}
+
+button[data-action="counter-offer"]:hover,
+button[data-action="counter-back"]:hover,
+button[data-action="submit-counter"]:hover {
+  border-color: #b8740d;
+  color: #241606;
+}
+
+button[data-action="return-correction"] {
+  border-color: rgba(185, 54, 46, 0.7);
+  color: white;
+  background: var(--gradient-correction);
+  box-shadow: 0 10px 24px rgba(185, 54, 46, 0.2);
+}
+
+button[data-action="return-correction"]:hover {
+  border-color: #a62d26;
+  color: white;
+}
+
+button[data-action="approve-contract"],
+button[data-action="start-offer"] {
+  border-color: rgba(24, 215, 210, 0.55);
+  background: var(--gradient-buy);
+  box-shadow: 0 11px 26px rgba(8, 122, 194, 0.25);
+}
+
+button[data-action="approve-contract"]:hover,
+button[data-action="start-offer"]:hover,
+.submit-offer-button:hover {
+  color: white;
+}
+
+.submit-offer-button {
+  border-color: rgba(53, 232, 107, 0.55);
+  background: var(--gradient-submit);
+  box-shadow: 0 12px 28px rgba(6, 198, 184, 0.24);
+}
+
+button[data-action="view-contract"],
+.contract-preview-button {
+  border-color: var(--line-dark);
+  color: var(--ink);
+  background: white;
+  box-shadow: none;
+}
+
+button[data-action="view-contract"]:hover,
+.contract-preview-button:hover {
+  border-color: var(--teal);
+  color: var(--navy);
+  background: white;
 }
 
 .trust-row {
@@ -754,6 +867,32 @@ h3 {
   height: 230px;
 }
 
+.property-image-link {
+  width: 100%;
+  cursor: pointer;
+  transition:
+    filter 160ms ease,
+    transform 160ms ease;
+}
+
+.property-image-link:hover {
+  filter: saturate(1.08) brightness(1.02);
+}
+
+.property-image-open {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  border: 0;
+  background: transparent;
+}
+
+.property-image-open:focus-visible {
+  outline: 3px solid rgba(24, 215, 210, 0.8);
+  outline-offset: -3px;
+}
+
 .property-image::before,
 .detail-image::before,
 .aside-image::before {
@@ -935,10 +1074,24 @@ h3 {
 }
 
 .property-footer button {
-  border: 0;
-  color: var(--teal-dark);
-  background: transparent;
+  min-height: 34px;
+  padding: 0 14px;
+  border: 1px solid rgba(24, 215, 210, 0.5);
+  border-radius: 999px;
+  color: white;
+  background: var(--gradient-buy);
+  box-shadow: 0 9px 22px rgba(8, 122, 194, 0.22);
   font-weight: 800;
+  transition:
+    transform 160ms ease,
+    filter 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.property-footer button:hover {
+  filter: saturate(1.08) brightness(1.04);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(8, 122, 194, 0.28);
 }
 
 .process-band {
@@ -3795,9 +3948,16 @@ h3 {
 }
 
 .choice-home {
-  width: min(100% - 40px, 1100px);
-  margin: 0 auto;
-  padding: 90px 0 110px;
+  width: min(100% - 40px, 1160px);
+  margin: 24px auto 42px;
+  padding: 82px 44px 100px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 34px;
+  background:
+    radial-gradient(circle at 18% 8%, rgba(24, 215, 210, 0.18), transparent 27%),
+    radial-gradient(circle at 88% 88%, rgba(255, 179, 46, 0.18), transparent 29%),
+    #050913;
+  box-shadow: 0 30px 80px rgba(5, 9, 19, 0.22);
 }
 
 .choice-home-copy {
@@ -3817,9 +3977,17 @@ h3 {
   line-height: 1.03;
 }
 
+.choice-home h1 {
+  color: white;
+}
+
+.choice-home .eyebrow {
+  color: #9bf1ec;
+}
+
 .choice-home-copy > p:last-child {
   margin: 0 auto;
-  color: var(--ink-soft);
+  color: #c4d4df;
   font-size: 17px;
   line-height: 1.75;
 }
@@ -3853,15 +4021,17 @@ h3 {
 .buyer-journey {
   color: white;
   background:
-    radial-gradient(circle at 80% 15%, rgba(93, 208, 195, 0.36), transparent 35%),
-    linear-gradient(145deg, #0b2b3d, #174e5a);
+    radial-gradient(circle at 80% 13%, rgba(94, 255, 239, 0.46), transparent 34%),
+    radial-gradient(circle at 16% 88%, rgba(0, 93, 199, 0.42), transparent 32%),
+    var(--gradient-buy);
 }
 
 .seller-journey {
-  color: var(--navy);
+  color: #241606;
   background:
-    radial-gradient(circle at 78% 18%, rgba(191, 143, 66, 0.22), transparent 36%),
-    linear-gradient(145deg, #fffdf8, #efe6d5);
+    radial-gradient(circle at 78% 16%, rgba(255, 246, 166, 0.68), transparent 34%),
+    radial-gradient(circle at 17% 86%, rgba(255, 105, 16, 0.28), transparent 32%),
+    var(--gradient-sell);
 }
 
 .journey-number {
@@ -3916,6 +4086,10 @@ h3 {
   margin-top: 30px;
 }
 
+.home-support-row .text-button {
+  color: #d7fbff;
+}
+
 .section-heading-actions {
   display: flex;
   align-items: center;
@@ -3924,6 +4098,7 @@ h3 {
 
 .property-save-button {
   position: absolute;
+  z-index: 3;
   right: 14px;
   bottom: 14px;
   display: grid;
@@ -4392,7 +4567,7 @@ h3 {
 @media (max-width: 680px) {
   .choice-home {
     width: min(100% - 28px, 1100px);
-    padding: 58px 0 80px;
+    padding: 58px 22px 80px;
   }
 
   .choice-card-grid,

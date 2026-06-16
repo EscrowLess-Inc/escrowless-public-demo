@@ -979,7 +979,15 @@ function renderProperties() {
     .map(
       (property) => `
         <article class="property-card">
-          <div class="property-image ${property.style}">
+          <div
+            class="property-image property-image-link ${property.style}"
+          >
+            <button
+              class="property-image-open"
+              data-action="view-property"
+              data-property-id="${property.id}"
+              aria-label="View ${property.address}"
+            ></button>
             <div class="image-badges">
               <span class="image-badge ${property.tag === "Sample facts" ? "verified" : ""}">${property.tag}</span>
             </div>
@@ -1096,7 +1104,15 @@ function renderSavedProperties() {
     .map(
       (property) => `
         <article class="property-card">
-          <div class="property-image ${property.style}">
+          <div
+            class="property-image property-image-link ${property.style}"
+          >
+            <button
+              class="property-image-open"
+              data-action="view-property"
+              data-property-id="${property.id}"
+              aria-label="View ${property.address}"
+            ></button>
             <div class="image-badges"><span class="image-badge verified">Saved in memory</span></div>
             <button class="property-save-button saved" data-action="favorite" data-property-id="${property.id}" aria-label="Remove from saved properties">♥</button>
           </div>
@@ -1866,6 +1882,7 @@ function renderStep() {
   });
   $("#previousStep").style.visibility = demoState.currentStep === 1 ? "hidden" : "visible";
   $("#nextStep").textContent = demoState.currentStep === 4 ? "Simulate offer submission" : "Continue";
+  $("#nextStep").classList.toggle("submit-offer-button", demoState.currentStep === 4);
   if (demoState.currentStep === 4) renderReviewSummary();
 }
 
