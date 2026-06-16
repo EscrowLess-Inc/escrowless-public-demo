@@ -1,33 +1,19 @@
 <!doctype html>
-<html lang="en" data-environment="public-demo">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; connect-src 'none'; form-action 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; worker-src 'none'; base-uri 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'"
-    />
-    <meta name="referrer" content="no-referrer" />
-    <meta name="robots" content="index, follow" />
-    <meta
       name="description"
-      content="Explore the public EscrowLess product demonstration using simulated transaction data only."
+      content="EscrowLess investor prototype: one guided digital path from property discovery to closing."
     />
-    <meta property="og:title" content="EscrowLess Public Product Demo" />
-    <meta
-      property="og:description"
-      content="Explore the EscrowLess buyer, seller, offer, document, review, and closing experience."
-    />
-    <meta property="og:type" content="website" />
-    <link rel="canonical" href="https://escrowless.net/" />
-    <link rel="icon" href="favicon.ico" />
-    <title>EscrowLess | Public Product Demo</title>
-    <link rel="stylesheet" href="styles.css?v=7" />
+    <title>EscrowLess | Investor Prototype</title>
+    <link rel="stylesheet" href="styles.css?v=2" />
   </head>
   <body>
     <div class="prototype-banner">
-      <strong>Public demo · Simulated transactions only</strong>
-      <button data-action="disclosure">Read full disclosure</button>
+      <span>Investor prototype</span>
+      <span>Sample data · Simulated review · Not a legal contract</span>
     </div>
 
     <header class="site-header">
@@ -40,79 +26,33 @@
       </button>
 
       <nav aria-label="Primary navigation">
-        <button class="nav-link active" data-view-link="home">Home</button>
-        <button class="nav-link" data-view-link="discover">Homes</button>
+        <button class="nav-link active" data-view-link="discover">Homes</button>
         <button class="nav-link" data-view-link="workspace">My transaction</button>
-        <button class="nav-link" data-view-link="documents">Agreements</button>
-        <button class="nav-link" data-view-link="role">Role workspace</button>
-        <button class="nav-link" data-view-link="features">Feature explorer</button>
-        <button class="nav-link" data-view-link="contact">Contact</button>
+        <button class="nav-link" data-view-link="review">Review desk</button>
       </nav>
 
       <div class="header-actions">
         <label class="role-switcher">
-          <span>Demo role</span>
+          <span>Viewing as</span>
           <select id="roleSelect" aria-label="Choose demo role">
             <option value="buyer">Buyer</option>
             <option value="seller">Seller</option>
-            <option value="attorney">Reviewer / Attorney</option>
-            <option value="lender">Lender</option>
-            <option value="inspector">Inspector</option>
-            <option value="appraiser">Appraiser</option>
-            <option value="title">Title / Closing</option>
-            <option value="insurance">Insurance</option>
+            <option value="attorney">Attorney</option>
           </select>
         </label>
-        <button class="saved-header-button" data-view-link="saved">
-          Saved <strong id="savedCount">0</strong>
-        </button>
-        <span class="demo-mode-badge">Public demo</span>
+        <button class="avatar-button" aria-label="Open profile">AP</button>
       </div>
     </header>
 
     <main>
-      <section class="view active" id="homeView">
-        <div class="choice-home">
-          <div class="choice-home-copy">
-            <p class="eyebrow">One clear place to begin</p>
-            <h1>What would you like to do?</h1>
-            <p>
-              Choose a path to explore the EscrowLess product experience. Every
-              action in this public demo is simulated and disappears when
-              the page is refreshed.
-            </p>
-          </div>
-          <div class="choice-card-grid">
-            <button class="journey-card buyer-journey" data-action="choose-buy">
-              <span class="journey-number">01</span>
-              <span class="journey-icon" aria-hidden="true">B</span>
-              <strong>Buy a Property</strong>
-              <small>Browse sample homes, save favorites, schedule a mock tour, build an offer, and follow the transaction to close.</small>
-              <em>Explore the buyer journey →</em>
-            </button>
-            <button class="journey-card seller-journey" data-action="choose-list">
-              <span class="journey-number">02</span>
-              <span class="journey-icon" aria-hidden="true">L</span>
-              <strong>List a Property</strong>
-              <small>Complete a temporary seller intake, review the listing agreement, and preview broker approval gates.</small>
-              <em>Explore the seller journey →</em>
-            </button>
-          </div>
-          <div class="home-support-row">
-            <button class="text-button" data-view-link="documents">View representation agreements <span>→</span></button>
-            <button class="text-button" data-view-link="contact">Contact EscrowLess <span>→</span></button>
-          </div>
-        </div>
-      </section>
-
-      <section class="view" id="discoverView">
+      <section class="view active" id="discoverView">
         <div class="hero">
           <div class="hero-copy">
             <p class="eyebrow">The simpler way home</p>
             <h1>Find it. Offer. Close.<br /><em>All in one place.</em></h1>
             <p class="hero-lede">
-              Explore how one guided workspace could take buyers and sellers
-              from a sample offer through a simulated closing.
+              EscrowLess gives buyers and sellers one guided workspace from the
+              first offer through the final signature.
             </p>
             <div class="search-box" role="search">
               <span class="search-icon" aria-hidden="true"></span>
@@ -126,9 +66,9 @@
               <button class="primary-button" data-action="search">Search homes</button>
             </div>
             <div class="trust-row">
-              <span><i>✓</i> Simulated offers</span>
-              <span><i>✓</i> Mock review workflow</span>
-              <span><i>✓</i> Sample closing timeline</span>
+              <span><i>✓</i> Guided offers</span>
+              <span><i>✓</i> Attorney-reviewed</span>
+              <span><i>✓</i> One visible timeline</span>
             </div>
           </div>
 
@@ -137,7 +77,7 @@
             <div class="floating-card offer-float">
               <span class="mini-icon">O</span>
               <div>
-                <small>Sample offer submitted</small>
+                <small>Offer submitted</small>
                 <strong>$612,000</strong>
               </div>
               <span class="success-dot"></span>
@@ -159,7 +99,7 @@
                 <strong>42%</strong>
               </div>
               <div class="mini-progress"><span></span></div>
-              <small>Next: mock review</small>
+              <small>Next: attorney review</small>
             </div>
           </div>
         </div>
@@ -170,18 +110,15 @@
               <p class="eyebrow">Demo market · Richmond, Virginia</p>
               <h2>Homes ready for a digital offer</h2>
             </div>
-            <div class="section-heading-actions">
-              <button class="text-button" data-action="list-property">List a property <span>→</span></button>
-              <button class="text-button" data-action="explain">How digital offers work <span>→</span></button>
-            </div>
+            <button class="text-button" data-action="explain">How digital offers work <span>→</span></button>
           </div>
 
           <div class="filter-row" aria-label="Property filters">
-            <button class="filter active" data-action="filter" data-filter="For sale">For sale</button>
-            <button class="filter" data-action="filter" data-filter="Any price">Any price</button>
-            <button class="filter" data-action="filter" data-filter="2+ beds">2+ beds</button>
-            <button class="filter" data-action="filter" data-filter="Sample facts">Sample facts</button>
-            <button class="filter" data-action="more-filters">More filters</button>
+            <button class="filter active">For sale</button>
+            <button class="filter">Any price</button>
+            <button class="filter">2+ beds</button>
+            <button class="filter">Verified facts</button>
+            <button class="filter">More filters</button>
             <span class="results-count">3 demo homes</span>
           </div>
 
@@ -202,14 +139,14 @@
               <article>
                 <span>02</span>
                 <div class="process-icon review-icon"></div>
-                <h3>Preview a review workflow</h3>
-                <p>See where a future licensed professional could review exceptions before any signing step.</p>
+                <h3>Get professional review</h3>
+                <p>A licensed professional reviews exceptions before anything moves to signature.</p>
               </article>
               <article>
                 <span>03</span>
                 <div class="process-icon close-icon"></div>
                 <h3>Follow every milestone</h3>
-                <p>Preview how buyer, seller, lender, title, and counsel could share one visible closing timeline.</p>
+                <p>Buyer, seller, lender, title, and counsel work from one visible closing timeline.</p>
               </article>
             </div>
           </div>
@@ -220,308 +157,6 @@
         <div class="content-shell property-detail-shell">
           <button class="back-button" data-action="back-to-homes">← Back to homes</button>
           <div id="propertyDetail"></div>
-        </div>
-      </section>
-
-      <section class="view" id="savedView">
-        <div class="content-shell saved-shell">
-          <div class="section-heading">
-            <div>
-              <p class="eyebrow">Browser memory only</p>
-              <h1>Saved properties</h1>
-              <p>These selections are temporary and are never stored or transmitted.</p>
-            </div>
-            <button class="secondary-button" data-view-link="discover">Browse all homes</button>
-          </div>
-          <div class="property-grid" id="savedPropertyGrid"></div>
-          <div class="empty-saved-state" id="emptySavedState">
-            <span>♡</span>
-            <h2>No properties saved yet.</h2>
-            <p>Save a sample home to demonstrate how a buyer could build a shortlist.</p>
-            <button class="primary-button" data-view-link="discover">Browse sample homes</button>
-          </div>
-        </div>
-      </section>
-
-      <section class="view" id="sellerView">
-        <div class="workflow-shell seller-intake-shell">
-          <div class="workflow-heading">
-            <button class="back-button" data-view-link="home">← Home</button>
-            <div class="workflow-title-row">
-              <div>
-                <p class="eyebrow">Seller intake · Public simulation</p>
-                <h1>Tell us about the property.</h1>
-                <p>Nothing entered here is saved, transmitted, or reviewed by a real agent or broker.</p>
-              </div>
-              <span class="demo-mode-badge">Broker approval required</span>
-            </div>
-          </div>
-          <div class="seller-intake-grid">
-            <section class="form-card">
-              <div class="demo-readonly-note">
-                Production would require secure login, KYC/MFA, consent, privacy controls, ownership review, and broker supervision.
-              </div>
-              <div class="field-grid" id="sellerIntakeForm">
-                <label class="field full-field">
-                  <span>Property address</span>
-                  <input id="sellerPropertyAddress" type="text" autocomplete="off" placeholder="123 Example Street, Richmond, VA" />
-                </label>
-                <label class="field">
-                  <span>Legal name</span>
-                  <input id="sellerLegalName" type="text" autocomplete="off" placeholder="Demo Seller" />
-                </label>
-                <label class="field">
-                  <span>Email</span>
-                  <input id="sellerEmail" type="email" autocomplete="off" placeholder="seller@example.test" />
-                </label>
-                <label class="field">
-                  <span>Phone</span>
-                  <input id="sellerPhone" type="tel" autocomplete="off" placeholder="(555) 010-0100" />
-                </label>
-                <label class="field">
-                  <span>Authority</span>
-                  <select id="sellerAuthority">
-                    <option value="">Choose one</option>
-                    <option>Property owner</option>
-                    <option>Authorized representative</option>
-                  </select>
-                </label>
-                <label class="field full-field">
-                  <span>Co-owners or other authorized parties <small>(optional)</small></span>
-                  <input id="sellerCoOwners" type="text" autocomplete="off" placeholder="Names or relationship" />
-                </label>
-                <label class="field">
-                  <span>Target list price <small>(optional)</small></span>
-                  <span class="money-input"><i>$</i><input id="sellerTargetPrice" type="number" min="0" step="1000" /></span>
-                </label>
-                <label class="field">
-                  <span>Preferred agent visit</span>
-                  <select id="sellerVisitTime">
-                    <option value="">Choose a window</option>
-                    <option>Weekday morning</option>
-                    <option>Weekday afternoon</option>
-                    <option>Weekday evening</option>
-                    <option>Weekend</option>
-                  </select>
-                </label>
-                <label class="field full-field">
-                  <span>Currently listed with another broker?</span>
-                  <select id="sellerCurrentlyListed">
-                    <option value="">Choose one</option>
-                    <option value="no">No</option>
-                    <option value="yes">Yes</option>
-                    <option value="unsure">Unsure</option>
-                  </select>
-                </label>
-                <button class="upload-box full-field" type="button" data-action="seller-photo-concept">
-                  <span class="upload-icon">P</span>
-                  <div>
-                    <strong>Optional property photos</strong>
-                    <small>Production concept only · File selection is disabled</small>
-                  </div>
-                  <span class="verified-pill">No upload</span>
-                </button>
-              </div>
-              <div class="seller-intake-actions">
-                <button class="secondary-button" data-action="seller-sign-agreement">Sign Listing Agreement</button>
-                <button class="primary-button" data-action="seller-submit-review">Submit for broker review</button>
-              </div>
-            </section>
-            <aside class="workspace-side">
-              <section class="side-card">
-                <p class="eyebrow">Activation gate</p>
-                <h3>A listing cannot go live from this demo.</h3>
-                <div class="listing-gate-list">
-                  <p><i>1</i> Seller intake completed</p>
-                  <p><i>2</i> Representation agreement reviewed</p>
-                  <p><i>3</i> Ownership and disclosures verified</p>
-                  <p><i>4</i> Licensed broker approves activation</p>
-                  <p><i>5</i> Authorized listing provider publishes</p>
-                </div>
-              </section>
-              <section class="side-card safety-card">
-                <p class="eyebrow">Private data boundary</p>
-                <strong>No intake data leaves this page.</strong>
-                <p>Refreshing or closing the demo erases all temporary seller information.</p>
-              </section>
-            </aside>
-          </div>
-        </div>
-      </section>
-
-      <section class="view" id="sellerReviewView">
-        <div class="success-shell seller-review-shell">
-          <div class="success-check">✓</div>
-          <p class="eyebrow">Seller intake simulation</p>
-          <h1>An agent or broker will review your listing shortly and reach out.</h1>
-          <p>
-            In this public demonstration, no information was sent and no person was contacted.
-            This screen represents the future supervised review queue.
-          </p>
-          <div class="seller-review-status" id="sellerReviewStatus"></div>
-          <div class="success-actions">
-            <button class="primary-button" data-action="seller-sign-agreement">Sign Representation Agreement</button>
-            <button class="secondary-button" data-view-link="home">Return home</button>
-          </div>
-        </div>
-      </section>
-
-      <section class="view" id="tourView">
-        <div class="workflow-shell">
-          <div class="workflow-heading">
-            <button class="back-button" data-action="back-to-property">← Property details</button>
-            <div class="workflow-title-row">
-              <div>
-                <p class="eyebrow">Tour scheduling · Mock workflow</p>
-                <h1>Choose a tour preference.</h1>
-                <p id="tourPropertyLabel"></p>
-              </div>
-              <span class="status-approved">Representation gate complete</span>
-            </div>
-          </div>
-          <div class="tour-grid">
-            <section class="form-card">
-              <div class="field-grid">
-                <label class="field">
-                  <span>Tour type</span>
-                  <select id="tourType">
-                    <option>In-person tour</option>
-                    <option>Live virtual tour</option>
-                  </select>
-                </label>
-                <label class="field">
-                  <span>Preferred day</span>
-                  <select id="tourDay">
-                    <option value="">Choose a sample day</option>
-                    <option>Tomorrow</option>
-                    <option>Saturday</option>
-                    <option>Sunday</option>
-                  </select>
-                </label>
-                <label class="field full-field">
-                  <span>Preferred time window</span>
-                  <select id="tourTime">
-                    <option value="">Choose a sample window</option>
-                    <option>9:00 a.m. – 11:00 a.m.</option>
-                    <option>12:00 p.m. – 2:00 p.m.</option>
-                    <option>4:00 p.m. – 6:00 p.m.</option>
-                  </select>
-                </label>
-              </div>
-              <div class="notice-card">
-                <span>i</span>
-                <p><strong>No appointment will be created.</strong> Production would coordinate licensed participants, access permissions, calendars, reminders, and confirmation.</p>
-              </div>
-              <div class="form-actions">
-                <button class="secondary-button" data-action="back-to-property">Cancel</button>
-                <button class="primary-button" data-action="complete-tour">Simulate tour request</button>
-              </div>
-            </section>
-            <aside class="side-card">
-              <p class="eyebrow">Agreement status</p>
-              <h3>Mock buyer representation acknowledged</h3>
-              <p>The demo records no signature, identity evidence, contract, calendar event, or message.</p>
-              <button class="text-button" data-action="view-buyer-agreement">View buyer agreement <span>→</span></button>
-            </aside>
-          </div>
-        </div>
-      </section>
-
-      <section class="view" id="documentsView">
-        <div class="dashboard-shell agreements-library">
-          <div class="dashboard-header">
-            <div>
-              <p class="eyebrow">Representative document library</p>
-              <h1>Review the brokerage agreements.</h1>
-              <p>These source templates are displayed for product demonstration and require legal and broker approval before any production use.</p>
-            </div>
-            <span class="demo-mode-badge">View only</span>
-          </div>
-          <div class="agreement-card-grid">
-            <article class="agreement-card">
-              <span class="agreement-card-icon">B</span>
-              <p class="eyebrow">Buyer side</p>
-              <h2>Exclusive Buyer Brokerage Agreement</h2>
-              <p>See the full supplied language that the tour and offer gates reference.</p>
-              <button class="primary-button" data-action="view-buyer-agreement">View buyer agreement</button>
-            </article>
-            <article class="agreement-card">
-              <span class="agreement-card-icon">S</span>
-              <p class="eyebrow">Seller side</p>
-              <h2>Exclusive Seller Brokerage Agreement</h2>
-              <p>See the full supplied language used in the seller listing workflow.</p>
-              <button class="primary-button" data-action="view-seller-agreement">View seller agreement</button>
-            </article>
-          </div>
-          <div class="contract-warning agreement-library-warning">
-            <strong>Source templates, not approved production forms</strong>
-            <span>The documents contain language describing legally binding agreements. This demo cannot create, sign, store, transmit, or enforce one.</span>
-          </div>
-        </div>
-      </section>
-
-      <section class="view" id="contactView">
-        <div class="workflow-shell contact-shell">
-          <div class="workflow-heading">
-            <p class="eyebrow">Contact EscrowLess</p>
-            <h1>Questions, feedback, or partnership interest?</h1>
-            <p>
-              Production intent: this form will send a message directly to EscrowLess.
-              In this public demo, delivery is disabled and no message leaves your browser.
-            </p>
-          </div>
-          <div class="contact-grid">
-            <section class="form-card">
-              <div class="field-grid" id="contactForm">
-                <label class="field">
-                  <span>Name</span>
-                  <input id="contactName" type="text" autocomplete="off" placeholder="Your name" />
-                </label>
-                <label class="field">
-                  <span>Email</span>
-                  <input id="contactEmail" type="email" autocomplete="off" placeholder="you@example.com" />
-                </label>
-                <label class="field">
-                  <span>Phone <small>(optional)</small></span>
-                  <input id="contactPhone" type="tel" autocomplete="off" placeholder="(555) 010-0100" />
-                </label>
-                <label class="field">
-                  <span>Topic</span>
-                  <select id="contactTopic">
-                    <option value="">Choose a topic</option>
-                    <option>Investor inquiry</option>
-                    <option>Potential vendor or partner</option>
-                    <option>Product feedback</option>
-                    <option>General question</option>
-                  </select>
-                </label>
-                <label class="field full-field">
-                  <span>Message</span>
-                  <textarea id="contactMessage" rows="7" placeholder="How can EscrowLess help?"></textarea>
-                </label>
-                <label class="consent-row full-field">
-                  <input id="contactConsent" type="checkbox" />
-                  <span>I understand this public demo will not send my message.</span>
-                </label>
-              </div>
-              <div class="form-actions">
-                <button class="secondary-button" data-view-link="home">Cancel</button>
-                <button class="primary-button" data-action="preview-contact">Preview message workflow</button>
-              </div>
-            </section>
-            <aside class="workspace-side">
-              <section class="side-card">
-                <p class="eyebrow">Future recipient</p>
-                <h3>EscrowLess, Inc.</h3>
-                <p>After privacy, security, spam-control, retention, and email-provider approvals, contact messages can be routed to the firm.</p>
-              </section>
-              <section class="side-card safety-card">
-                <p class="eyebrow">Current status</p>
-                <strong>Email adapter: mock</strong>
-                <p>No real message delivery, database write, notification, or analytics event is enabled.</p>
-              </section>
-            </aside>
-          </div>
         </div>
       </section>
 
@@ -542,10 +177,7 @@
             </div>
           </div>
 
-          <div id="offerForm" aria-label="Interactive demo offer builder">
-            <div class="demo-readonly-note">
-              Simulated data only. Changes remain in temporary browser memory and are never submitted or stored.
-            </div>
+          <form id="offerForm">
             <div class="offer-layout">
               <div class="form-card">
                 <section class="form-step active" data-step="1">
@@ -579,14 +211,14 @@
                       <span class="money-input"><i>$</i><input id="earnestMoney" type="number" min="0" step="500" value="6000" /></span>
                     </label>
                   </div>
-                  <button class="upload-box" type="button" data-action="preview-upload">
-                    <span class="upload-icon">D</span>
+                  <div class="upload-box">
+                    <span class="upload-icon">↑</span>
                     <div>
-                      <strong>Sample pre-approval preview</strong>
-                      <small>Mock metadata only · No file is uploaded</small>
+                      <strong>Pre-approval letter attached</strong>
+                      <small>first-harbor-preapproval.pdf · Sample verification</small>
                     </div>
-                    <span class="verified-pill">Mock data</span>
-                  </button>
+                    <span class="verified-pill">Verified</span>
+                  </div>
                 </section>
 
                 <section class="form-step" data-step="2">
@@ -654,7 +286,7 @@
                   <div id="reviewSummary" class="review-summary"></div>
                   <label class="consent-row">
                     <input id="reviewConsent" type="checkbox" />
-                    <span>I understand this is a non-binding simulation that cannot be submitted or used for a real transaction.</span>
+                    <span>I understand this is a prototype preview and not a binding real estate offer.</span>
                   </label>
                 </section>
 
@@ -675,15 +307,15 @@
                 <div class="aside-section estimate-section">
                   <span class="aside-label">Estimated EscrowLess fees</span>
                   <strong id="feeEstimate">$0</strong>
-                  <small>Mock estimate only. No fee is quoted, offered, charged, or collected.</small>
+                  <small>Illustrative only. Final pricing varies by representation and jurisdiction.</small>
                 </div>
                 <div class="human-note">
-                  <span>R</span>
-                  <p><strong>Illustrative review step.</strong> This demo does not provide an attorney, broker, or other professional.</p>
+                  <span>AP</span>
+                  <p><strong>A professional stays in the loop.</strong> Unusual terms are routed for attorney or broker review.</p>
                 </div>
               </aside>
             </div>
-          </div>
+          </form>
         </div>
       </section>
 
@@ -691,12 +323,12 @@
         <div class="success-shell">
           <div class="success-check">✓</div>
           <p class="eyebrow">Offer EL-1048</p>
-          <h1>The demo has advanced.</h1>
-          <p>No offer was sent and no seller was notified. This browser-only simulation has prepared the next mock workflow screens.</p>
+          <h1>Your offer is in motion.</h1>
+          <p>The seller has been notified. EscrowLess has created a structured review packet and added every action to the audit history.</p>
           <div class="success-steps">
-            <div class="complete"><span>✓</span><strong>Submission simulated</strong><small>Just now</small></div>
-            <div class="active"><span>2</span><strong>Mock seller review</strong><small>Illustrative target: 2 hours</small></div>
-            <div><span>3</span><strong>Mock professional review</strong><small>Shown after demo acceptance</small></div>
+            <div class="complete"><span>✓</span><strong>Offer submitted</strong><small>Just now</small></div>
+            <div class="active"><span>2</span><strong>Seller review</strong><small>Target: within 2 hours</small></div>
+            <div><span>3</span><strong>Professional review</strong><small>Triggered after acceptance</small></div>
           </div>
           <div class="success-actions">
             <button class="primary-button" data-action="seller-review">Open seller review</button>
@@ -719,77 +351,13 @@
         </div>
       </section>
 
-      <section class="view" id="negotiationView">
-        <div class="dashboard-shell">
-          <button class="back-button" data-view-link="workspace">← Transaction workspace</button>
-          <div class="dashboard-header negotiation-header">
-            <div>
-              <p class="eyebrow" id="negotiationRoleLabel">Seller counteroffer</p>
-              <h1 id="negotiationHeading">Revise the terms and return them to the buyer.</h1>
-              <p id="negotiationSubheading">Each simulated version remains visible in the negotiation history.</p>
-            </div>
-            <span class="demo-mode-badge" id="negotiationRound">Version 2 · Seller's turn</span>
-          </div>
-          <div class="negotiation-grid">
-            <section class="role-main-card">
-              <div class="card-heading">
-                <div><p class="eyebrow">Current proposal</p><h2 id="negotiationProposalTitle">Terms under review</h2></div>
-                <span class="live-pill">No transmission</span>
-              </div>
-              <div class="negotiation-summary" id="negotiationSummary"></div>
-              <div class="counter-editor" id="counterEditor">
-                <div class="field-grid">
-                  <label class="field">
-                    <span>Counteroffer price</span>
-                    <input id="counterPrice" type="number" min="100000" step="1000" />
-                  </label>
-                  <label class="field">
-                    <span>Earnest money</span>
-                    <input id="counterEarnest" type="number" min="1" step="500" />
-                  </label>
-                  <label class="field">
-                    <span>Proposed closing date</span>
-                    <input id="counterClosing" type="date" />
-                  </label>
-                  <label class="field">
-                    <span>Response requested by</span>
-                    <input id="counterResponse" type="date" />
-                  </label>
-                  <label class="field full-field">
-                    <span>Personal property included</span>
-                    <input id="counterIncluded" type="text" />
-                  </label>
-                  <label class="field full-field">
-                    <span>Counteroffer note <small>(not a legal term)</small></span>
-                    <textarea id="counterNote" rows="4"></textarea>
-                  </label>
-                </div>
-              </div>
-              <div class="review-actions negotiation-actions" id="negotiationActions"></div>
-            </section>
-            <aside class="workspace-side">
-              <section class="side-card">
-                <p class="eyebrow">Version history</p>
-                <h3>Every turn remains visible</h3>
-                <div class="negotiation-history" id="negotiationHistory"></div>
-              </section>
-              <section class="side-card safety-card">
-                <p class="eyebrow">Demo boundary</p>
-                <strong>This loop changes browser memory only.</strong>
-                <p>No offer, counteroffer, acceptance, message, or contract is sent, stored, or made binding.</p>
-              </section>
-            </aside>
-          </div>
-        </div>
-      </section>
-
       <section class="view" id="workspaceView">
         <div class="dashboard-shell">
           <div class="transaction-top">
             <div>
               <p class="eyebrow">Active transaction · EL-1048</p>
               <h1 id="workspaceAddress">Your closing, clearly mapped.</h1>
-              <p>This simulation shows shared milestones while keeping mock role details separate.</p>
+              <p>Buyer and seller share the same milestones. Sensitive details remain role-specific.</p>
             </div>
             <div class="transaction-status">
               <span id="workspaceStatus">Offer in review</span>
@@ -812,314 +380,23 @@
               <section class="side-card">
                 <div class="card-heading compact">
                   <div><p class="eyebrow">Activity</p><h3>Audit history</h3></div>
-                  <span class="live-pill">Demo</span>
+                  <span class="live-pill">Live</span>
                 </div>
                 <div class="activity-list" id="activityList"></div>
               </section>
               <section class="side-card support-card">
-                <span class="support-avatar">i</span>
-                <div><strong>Illustrative participants</strong><p>No brokerage, legal, or transaction support is provided.</p></div>
-                <button data-action="disclosure" aria-label="Read demo disclosure">i</button>
+                <span class="support-avatar">AP</span>
+                <div><strong>Your EscrowLess team</strong><p>Buyer agent · Attorney review · Transaction support</p></div>
+                <button aria-label="Open team chat">↗</button>
               </section>
             </aside>
           </div>
-        </div>
-      </section>
-
-      <section class="view" id="contractView">
-        <div class="contract-shell">
-          <div class="contract-toolbar">
-            <button class="back-button" data-view-link="workspace">← Transaction workspace</button>
-            <div class="contract-toolbar-actions">
-              <button class="secondary-button" data-action="edit-contract-terms">Edit deal terms</button>
-              <button class="primary-button" id="contractContinue" data-action="review-contract">Mark preview reviewed</button>
-            </div>
-          </div>
-          <div class="contract-warning">
-            <strong>View-only simulated contract</strong>
-            <span>This is a product-design artifact, not a legal form or binding agreement. Signing is disabled.</span>
-          </div>
-          <article class="contract-document" id="contractDocument" aria-label="View-only simulated purchase agreement"></article>
-        </div>
-      </section>
-
-      <section class="view" id="deedView">
-        <div class="contract-shell">
-          <div class="contract-toolbar">
-            <button class="back-button" data-view-link="workspace">← Transaction workspace</button>
-            <div class="contract-toolbar-actions">
-              <button class="secondary-button" data-action="view-contract">View contract</button>
-            </div>
-          </div>
-          <div class="contract-warning deed-warning">
-            <strong>View-only simulated deed</strong>
-            <span>This is not recordable, does not convey property, and is available only after the simulated closing.</span>
-          </div>
-          <article class="contract-document deed-document" id="deedDocument" aria-label="View-only simulated deed"></article>
-        </div>
-      </section>
-
-      <section class="view" id="milestoneView">
-        <div class="dashboard-shell">
-          <button class="back-button" data-view-link="workspace">← Transaction workspace</button>
-          <div class="milestone-hero">
-            <div>
-              <p class="eyebrow" id="milestoneEyebrow">Simulated milestone</p>
-              <h1 id="milestoneHeading">Next transaction step</h1>
-              <p id="milestoneDescription"></p>
-            </div>
-            <div class="milestone-owner">
-              <span>Primary role</span>
-              <strong id="milestoneOwner">Participant</strong>
-            </div>
-          </div>
-          <div class="milestone-grid">
-            <section class="role-main-card">
-              <div class="card-heading">
-                <div><p class="eyebrow">Guided workflow</p><h2>What happens at this stage</h2></div>
-                <span class="live-pill">Public simulation</span>
-              </div>
-              <div class="milestone-step-list" id="milestoneSteps"></div>
-              <div class="milestone-completion">
-                <p id="milestoneSafety"></p>
-                <button class="primary-button" id="completeMilestone" data-action="complete-milestone">Simulate completion</button>
-              </div>
-            </section>
-            <aside class="workspace-side">
-              <section class="side-card">
-                <p class="eyebrow">Role visibility</p>
-                <h3>Information available here</h3>
-                <div class="visibility-list" id="milestoneVisibility"></div>
-              </section>
-              <section class="side-card">
-                <p class="eyebrow">Next handoff</p>
-                <h3 id="milestoneHandoffTitle">Another participant acts next</h3>
-                <p id="milestoneHandoffBody"></p>
-              </section>
-              <section class="side-card safety-card">
-                <p class="eyebrow">Demo boundary</p>
-                <strong>No real-world action occurs.</strong>
-                <p>No person, vendor, account, document service, payment rail, or government system is contacted.</p>
-              </section>
-            </aside>
-          </div>
-        </div>
-      </section>
-
-      <section class="view" id="roleView">
-        <div class="dashboard-shell">
-          <div class="dashboard-header role-dashboard-header">
-            <div>
-              <p class="eyebrow" id="roleEyebrow">Buyer workspace</p>
-              <h1 id="roleHeading">See the transaction from this role.</h1>
-              <p id="roleDescription"></p>
-            </div>
-            <button class="secondary-button" data-view-link="features">Explore every feature</button>
-          </div>
-          <div class="role-overview-grid">
-            <section class="role-main-card">
-              <div class="card-heading">
-                <div><p class="eyebrow">Role responsibilities</p><h2>What this participant can do</h2></div>
-                <span class="live-pill">Selectable role</span>
-              </div>
-              <div class="role-capability-grid" id="roleCapabilities"></div>
-            </section>
-            <aside class="workspace-side">
-              <section class="side-card next-action-card" id="roleNextAction"></section>
-              <section class="side-card">
-                <p class="eyebrow">Information access</p>
-                <h3>What this role sees</h3>
-                <div class="visibility-list" id="roleVisibility"></div>
-              </section>
-              <section class="side-card">
-                <p class="eyebrow">Handoffs</p>
-                <h3>Who acts next</h3>
-                <div class="handoff-list" id="roleHandoffs"></div>
-              </section>
-            </aside>
-          </div>
-        </div>
-      </section>
-
-      <section class="view" id="featuresView">
-        <div class="dashboard-shell">
-          <div class="dashboard-header">
-            <div>
-              <p class="eyebrow">Complete public product map</p>
-              <h1>Explore every planned module.</h1>
-              <p>Open any feature to see its production purpose, role access, workflow, safeguards, and current prototype state.</p>
-            </div>
-            <span class="demo-mode-badge">No network connections</span>
-          </div>
-          <div class="feature-toolbar">
-            <button class="filter active" data-action="feature-filter" data-feature-filter="all">All modules</button>
-            <button class="filter" data-action="feature-filter" data-feature-filter="transaction">Transaction</button>
-            <button class="filter" data-action="feature-filter" data-feature-filter="documents">Documents</button>
-            <button class="filter" data-action="feature-filter" data-feature-filter="vendors">Vendors</button>
-            <button class="filter" data-action="feature-filter" data-feature-filter="platform">Platform</button>
-          </div>
-          <div class="feature-grid" id="featureGrid"></div>
         </div>
       </section>
     </main>
 
-    <footer class="site-footer">
-      <strong>EscrowLess, Inc. public product demo</strong>
-      <span>Simulated data only. No accounts, transmission, persistent storage, uploads, messages, payments, binding contracts, or production connections.</span>
-      <span>© 2026 EscrowLess, Inc.</span>
-    </footer>
-
-    <aside class="legal-dock" aria-label="Persistent demo disclosure">
-      <strong>Public simulation only.</strong>
-      <span>No agency, fiduciary, contractual, or professional relationship is created. Nothing here can perform a real transaction.</span>
-      <button data-action="disclosure">Full disclosure</button>
-    </aside>
-
-    <dialog class="disclosure-dialog" id="disclosureDialog" aria-labelledby="disclosureTitle">
-      <div class="disclosure-dialog-inner">
-        <p class="eyebrow">Public product-demo disclosure</p>
-        <h2 id="disclosureTitle">This is a public product simulation only.</h2>
-        <p>
-          This public experience uses simulated data and workflows. It is not a real
-          estate brokerage, legal service, escrow service, title service,
-          lending service, insurance service, or other professional service.
-        </p>
-        <p>
-          Nothing in this simulation creates an agency, fiduciary, contractual,
-          attorney-client, broker-client, escrow, title, lending, insurance, or
-          other professional relationship. Nothing shown is legal, financial,
-          real estate, lending, title, escrow, insurance, tax, or investment
-          advice.
-        </p>
-        <p>
-          This product lab cannot create accounts, submit or transmit forms, store
-          records, upload files, send notifications or emails, process
-          payments, generate binding contracts, connect to production
-          databases, or be used for any real transaction.
-        </p>
-        <div class="disclosure-facts">
-          <span>Mock listings</span>
-          <span>Selectable roles</span>
-          <span>Mock documents</span>
-          <span>Browser memory only</span>
-        </div>
-        <button class="primary-button" data-action="close-disclosure">Enter the public demo</button>
-      </div>
-    </dialog>
-
-    <dialog class="info-dialog" id="infoDialog" aria-labelledby="infoDialogTitle">
-      <div class="info-dialog-inner">
-        <button class="dialog-close" data-action="close-info" aria-label="Close explanation">×</button>
-        <p class="eyebrow" id="infoDialogEyebrow">Feature simulation</p>
-        <h2 id="infoDialogTitle">How this feature works</h2>
-        <p id="infoDialogBody"></p>
-        <div class="info-dialog-grid" id="infoDialogDetails"></div>
-        <div class="info-dialog-actions" id="infoDialogActions">
-          <button class="primary-button" data-action="close-info">Return to the demo</button>
-        </div>
-      </div>
-    </dialog>
-
-    <dialog class="validation-dialog" id="validationDialog" aria-labelledby="validationDialogTitle">
-      <div class="validation-dialog-inner">
-        <span class="validation-icon" aria-hidden="true">!</span>
-        <p class="eyebrow">One more thing</p>
-        <h2 id="validationDialogTitle">Please complete the required information.</h2>
-        <div class="validation-message-list" id="validationMessages"></div>
-        <button class="primary-button" data-action="close-validation">Return to the form</button>
-      </div>
-    </dialog>
-
-    <dialog class="buyer-intake-dialog" id="buyerIntakeDialog" aria-labelledby="buyerIntakeTitle">
-      <div class="buyer-intake-dialog-inner">
-        <button class="dialog-close" data-action="close-buyer-intake" aria-label="Close buyer intake">×</button>
-        <p class="eyebrow">Buyer representation gate · Mock intake</p>
-        <h2 id="buyerIntakeTitle">Before a tour or offer, complete the buyer intake.</h2>
-        <p>
-          This information remains in temporary browser memory only. No identity is verified,
-          no account is created, and no brokerage relationship is formed.
-        </p>
-        <div class="field-grid" id="buyerIntakeForm">
-          <label class="field">
-            <span>Legal name</span>
-            <input id="buyerLegalName" type="text" autocomplete="off" placeholder="Demo Buyer" />
-          </label>
-          <label class="field">
-            <span>Email</span>
-            <input id="buyerEmail" type="email" autocomplete="off" placeholder="buyer@example.test" />
-          </label>
-          <label class="field">
-            <span>Phone</span>
-            <input id="buyerPhone" type="tel" autocomplete="off" placeholder="(555) 010-0100" />
-          </label>
-          <label class="field">
-            <span>Authority</span>
-            <select id="buyerAuthority">
-              <option value="">Choose one</option>
-              <option>Buyer</option>
-              <option>Authorized representative</option>
-            </select>
-          </label>
-          <label class="field full-field">
-            <span>Current address</span>
-            <input id="buyerAddress" type="text" autocomplete="off" placeholder="Demo address" />
-          </label>
-          <label class="field full-field">
-            <span>Co-buyers <small>(optional)</small></span>
-            <input id="buyerCoBuyers" type="text" autocomplete="off" placeholder="Names" />
-          </label>
-        </div>
-        <div class="buyer-intake-actions">
-          <button class="secondary-button" data-action="close-buyer-intake">Cancel</button>
-          <button class="primary-button" data-action="continue-buyer-agreement">Continue to agreement</button>
-        </div>
-      </div>
-    </dialog>
-
-    <dialog class="agreement-dialog" id="agreementDialog" aria-labelledby="agreementDialogTitle">
-      <div class="agreement-dialog-inner">
-        <div class="agreement-dialog-toolbar">
-          <div>
-            <p class="eyebrow" id="agreementDialogEyebrow">Representative agreement</p>
-            <h2 id="agreementDialogTitle">Brokerage agreement</h2>
-          </div>
-          <button class="dialog-close" data-action="close-agreement" aria-label="Close agreement">×</button>
-        </div>
-        <div class="agreement-demo-warning">
-          <strong>DEMONSTRATION ONLY · NOT REVIEWED OR APPROVED FOR PRODUCTION · NOT BINDING</strong>
-          <span>
-            The source template below contains language describing a legally binding agreement.
-            This mock viewer and “Mock Sign” control cannot create a signature, contract, agency,
-            fiduciary, broker-client, or professional relationship.
-          </span>
-        </div>
-        <div class="agreement-intake-summary" id="agreementIntakeSummary"></div>
-        <article class="source-agreement-document" id="agreementDocument"></article>
-        <div class="agreement-sign-panel" id="agreementSignPanel">
-          <label class="consent-row">
-            <input id="agreementMockConsent" type="checkbox" />
-            <span>I understand this is a nonbinding simulation and that clicking below does not sign or execute the displayed agreement.</span>
-          </label>
-          <button class="primary-button" data-action="mock-sign-agreement">Mock Sign · Simulation Only</button>
-        </div>
-        <button class="secondary-button agreement-close-bottom" data-action="close-agreement">Close document</button>
-      </div>
-    </dialog>
-
-    <noscript>
-      <div class="noscript-disclosure">
-        Public demonstration only. EscrowLess is not providing brokerage, legal,
-        escrow, title, lending, insurance, or other professional services. This
-        site cannot be used for real transactions.
-      </div>
-    </noscript>
-
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    <script src="demo-config.js?v=7"></script>
-    <script src="demo-safety.js?v=7"></script>
-    <script src="sandbox-platform.js?v=7"></script>
-    <script src="agreements.generated.js?v=7"></script>
-    <script src="app.js?v=7"></script>
+    <script src="app.js?v=2"></script>
   </body>
 </html>
