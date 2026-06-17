@@ -7,7 +7,9 @@ const agreements = window.ESCROWLESS_AGREEMENTS;
 if (
   config?.environment !== "public-demo" ||
   config?.publicDemoOnly !== true ||
+  config?.realWorldEffectsDisabled !== true ||
   config?.demoOnly !== true ||
+  config?.mockDataOnly !== true ||
   !sandbox ||
   !agreements
 ) {
@@ -263,7 +265,18 @@ const featureCatalog = [
     roles: ["All transaction roles"],
     workflow: ["Choose permitted recipient", "Select or write message", "Review sensitive content", "Send and record delivery"],
     production: "A production system would enforce permissions, retention, consent, delivery controls, and support escalation.",
-    safety: "No email, text, push notification, or in-platform message can be sent from this public demo.",
+    safety: "No email, text, push notification, or in-platform message can be sent from this lab.",
+  },
+  {
+    id: "admin",
+    category: "platform",
+    title: "Administration, compliance & audit",
+    status: "Private console",
+    summary: "Read-only environment flags, approval gates, provider modes, adapter contracts, mock tests, and redacted session audit.",
+    roles: ["Platform Admin", "Compliance", "Broker leadership"],
+    workflow: ["Configure approved rules", "Manage role access", "Monitor exceptions", "Audit changes and incidents"],
+    production: "High-risk changes would require server-side controls, authentication, least privilege, separation of duties, documented approvals, monitoring, and rollback.",
+    safety: "The separate private admin page changes no system, permission, credential, template, vendor, or persistent record and must be omitted from public deployments.",
   },
 ];
 
@@ -371,6 +384,19 @@ const roleDefinitions = {
       ["Deliver evidence", "Update the lender and closing milestone when authorized.", "closing"],
     ],
     next: ["Explore insurance readiness", "Review the proposed quote-to-evidence workflow.", "Open insurance module", "insurance"],
+  },
+  admin: {
+    label: "Platform Admin",
+    description: "Configure approved workflows, permissions, templates, vendors, support processes, monitoring, and audit controls.",
+    visibility: ["System configuration and approval state", "Role and vendor permissions", "Operational exceptions and incidents", "Audit history without unnecessary transaction content"],
+    handoffs: ["Compliance approves controlled changes", "Authorized teams resolve incidents", "Production releases follow documented gates"],
+    capabilities: [
+      ["Configure workflows", "Manage approved states, deadlines, and routing rules.", "admin"],
+      ["Control permissions", "Define least-privilege access by role and transaction.", "profiles"],
+      ["Manage vendors", "Track approval, licensing, insurance, and integration status.", "admin"],
+      ["Audit operations", "Review changes, incidents, access, and exception handling.", "admin"],
+    ],
+    next: ["Explore administration", "Open the compliance, configuration, and audit design.", "Open admin module", "admin"],
   },
 };
 
@@ -554,7 +580,7 @@ const milestoneDefinitions = {
       ["Confirm settlement completion", "The closing provider marks the approved signing and funding prerequisites complete.", "Title / closing provider"],
       ["Record and disburse", "Production providers would control recording and authorized disbursement.", "Title / closing provider"],
       ["Deliver keys and final copies", "Parties see permitted completion status and receive approved final documents.", "Seller, title / closing, and broker"],
-      ["Archive and measure", "The transaction file closes with retention status, audit package, analytics, and satisfaction feedback.", "EscrowLess operations"],
+      ["Archive and measure", "The transaction file closes with retention status, audit package, analytics, and satisfaction feedback.", "Platform administrator"],
     ],
     visibility: ["Closing completion", "Recording and disbursement status", "Final-copy delivery", "Archive and audit status"],
     handoffTitle: "The transaction is complete",
@@ -588,6 +614,96 @@ const milestoneProviderCalls = {
   closed: [["eRecording", "submitForRecording"]],
 };
 
+const milestoneTaskProviderCalls = {
+  signatures: [
+    [["documentVault", "listDocuments"]],
+    [["eSignature", "createEnvelope"]],
+    [["eSignature", "getEnvelopeStatus"]],
+    [["documentVault", "storeDocument"]],
+  ],
+  earnest: [
+    [["titleSettlement", "getTitleStatus"]],
+    [["earnestMoney", "createDepositIntent"]],
+    [["earnestMoney", "getDepositStatus"]],
+    [["earnestMoney", "getDepositStatus"]],
+  ],
+  title: [
+    [["titleSettlement", "openTitleOrder"]],
+    [["titleSettlement", "getTitleStatus"]],
+    [["titleSettlement", "prepareSettlement"]],
+    [["titleSettlement", "getTitleStatus"]],
+  ],
+  closing_ready: [
+    [["eClosing", "prepareClosing"]],
+    [["eClosing", "getClosingStatus"]],
+    [["remoteNotary", "checkEligibility"], ["remoteNotary", "scheduleNotarization"]],
+    [["eClosing", "getClosingStatus"]],
+  ],
+  closed: [
+    [["eClosing", "getClosingStatus"]],
+    [["eRecording", "validatePackage"], ["eRecording", "submitForRecording"]],
+    [["documentVault", "grantDocumentAccess"]],
+    [["documentVault", "storeDocument"]],
+  ],
+};
+
+const milestoneTaskOutputs = {
+  signatures: [
+    "Locked version confirmed in the mock document vault.",
+    "Signer identity and e-record consent marked ready.",
+    "Required acknowledgment checklist marked complete.",
+    "Tamper-evidence and copy-distribution status marked complete.",
+  ],
+  earnest: [
+    "Authorized holder identified for this sample transaction.",
+    "Portal-only instruction workflow displayed without bank details.",
+    "Deposit deadline and participant visibility marked ready.",
+    "Mock receipt status recorded; no money moved.",
+  ],
+  inspection: [
+    "Inspection scope selected for the sample contingency.",
+    "Access window coordinated in the mock provider desk.",
+    "Findings categorized for buyer review without uploading a report.",
+    "Inspection contingency resolved in the public demo timeline.",
+  ],
+  appraisal: [
+    "Lender-authorized appraisal assignment marked created.",
+    "Property access coordination marked ready.",
+    "Valuation delivery status marked delivered without a value opinion.",
+    "Appraisal exception workflow marked resolved.",
+  ],
+  financing: [
+    "Application and disclosure status marked active.",
+    "Buyer condition checklist marked satisfied without collecting documents.",
+    "Underwriting milestone marked complete.",
+    "Clear-to-close status marked issued.",
+  ],
+  title: [
+    "Title order marked opened from approved contract facts.",
+    "Title requirements and exception status marked reviewed.",
+    "Settlement-figure preparation marked ready without figures.",
+    "Title clear status marked complete.",
+  ],
+  insurance: [
+    "Approved quote request workflow marked ready.",
+    "Coverage comparison fields marked reviewed without quotes.",
+    "Provider selection step marked complete without binding coverage.",
+    "Evidence-of-insurance status marked delivered to the mock lender path.",
+  ],
+  closing_ready: [
+    "Final figure review milestone marked ready without creating a CD or ALTA.",
+    "Final walkthrough status marked complete.",
+    "Signing and notarization readiness marked scheduled without an appointment.",
+    "Funding and recording readiness marked ready.",
+  ],
+  closed: [
+    "Settlement completion marked complete.",
+    "Recording and disbursement status marked complete without filing or moving money.",
+    "Final-copy delivery marked complete.",
+    "Archive, audit pack, and satisfaction status marked complete.",
+  ],
+};
+
 const demoState = {
   selectedPropertyId: 1,
   savedPropertyIds: new Set(),
@@ -600,6 +716,7 @@ const demoState = {
   pendingBuyerAction: "",
   buyerAgreementAcknowledged: false,
   sellerAgreementAcknowledged: false,
+  providerTaskCompletions: {},
   agreementContext: {
     type: "buyer",
     mode: "view",
@@ -1419,7 +1536,7 @@ function previewContactMessage() {
   showInfoDialog({
     eyebrow: "Contact workflow preview",
     title: "Your message was not sent.",
-    body: "The mock adapter validated the workflow without delivering or storing any contact information.",
+    body: "The public demo adapter validated the workflow without delivering or storing any contact information.",
     details: [
       ["Future destination", "EscrowLess, Inc. contact inbox after privacy, security, spam-control, and email-provider approval."],
       ["Current provider", "Mock contact-delivery adapter."],
@@ -1501,7 +1618,7 @@ function openFeature(featureId) {
       ["Production purpose", feature.production],
       ["Typical workflow", feature.workflow.join(" → ")],
       ["Participating roles", feature.roles.join(", ")],
-      ["Demo boundary", feature.safety],
+      ["Public demo boundary", feature.safety],
     ],
     actionLabel: "Continue exploring",
   });
@@ -1712,11 +1829,11 @@ function renderContract() {
     <section class="contract-signature-lock">
       <div>
         <span>Buyer signature</span>
-        <strong>Disabled in public simulation</strong>
+        <strong>Disabled in public demo simulation</strong>
       </div>
       <div>
         <span>Seller signature</span>
-        <strong>Disabled in public simulation</strong>
+        <strong>Disabled in public demo simulation</strong>
       </div>
     </section>
   `;
@@ -1821,6 +1938,98 @@ function renderDeed() {
   `;
 }
 
+function getMilestoneTaskSet(milestoneId) {
+  if (!demoState.providerTaskCompletions[milestoneId]) {
+    demoState.providerTaskCompletions[milestoneId] = new Set();
+  }
+  return demoState.providerTaskCompletions[milestoneId];
+}
+
+function getCompletedMilestoneTaskCount(milestoneId) {
+  return getMilestoneTaskSet(milestoneId).size;
+}
+
+function isMilestoneTaskDone(milestoneId, taskIndex) {
+  return getMilestoneTaskSet(milestoneId).has(taskIndex);
+}
+
+function isMilestoneTaskReady(milestoneId, taskIndex) {
+  return taskIndex === 0 || isMilestoneTaskDone(milestoneId, taskIndex - 1);
+}
+
+function areMilestoneTasksComplete(milestoneId) {
+  const milestone = milestoneDefinitions[milestoneId];
+  return Boolean(milestone) && getCompletedMilestoneTaskCount(milestoneId) >= milestone.steps.length;
+}
+
+function getMilestoneNextTask(milestoneId) {
+  const milestone = milestoneDefinitions[milestoneId];
+  if (!milestone) return null;
+  return milestone.steps.find((_, index) => !isMilestoneTaskDone(milestoneId, index)) || null;
+}
+
+function runMilestoneTaskProviderCalls(milestoneId, taskIndex) {
+  const calls = milestoneTaskProviderCalls[milestoneId]?.[taskIndex] || [];
+  calls.forEach(([provider, method]) => {
+    sandbox.providers.invoke(provider, method, {
+      actor: demoState.role,
+      transactionId: "EL-1048-DEMO",
+      milestone: milestoneId,
+      taskIndex,
+      mockOnly: true,
+    });
+  });
+}
+
+function completeProviderTask(milestoneId, taskIndex) {
+  const milestone = milestoneDefinitions[milestoneId];
+  if (!milestone) return;
+  if (isMilestoneTaskDone(milestoneId, taskIndex)) return;
+  if (!isMilestoneTaskReady(milestoneId, taskIndex)) {
+    showValidation("Complete the prior task first.", [
+      "This demo uses a simple status gate so the provider steps stay in order.",
+      "Finish the unlocked task above before completing this one.",
+    ]);
+    return;
+  }
+  runMilestoneTaskProviderCalls(milestoneId, taskIndex);
+  getMilestoneTaskSet(milestoneId).add(taskIndex);
+  audit("provider_portal.task.completed", {
+    milestone: milestoneId,
+    taskIndex: taskIndex + 1,
+    taskTitle: milestone.steps[taskIndex][0],
+    responsibleRole: milestone.steps[taskIndex][2],
+    output: milestoneTaskOutputs[milestoneId]?.[taskIndex] || "Mock status completed.",
+  });
+  renderMilestone(milestoneId);
+  showToast(`${milestone.steps[taskIndex][0]} marked complete. No real provider was contacted.`);
+}
+
+function renderMilestonePortal(milestoneId) {
+  const milestone = milestoneDefinitions[milestoneId];
+  const completed = getCompletedMilestoneTaskCount(milestoneId);
+  const total = milestone.steps.length;
+  const nextTask = getMilestoneNextTask(milestoneId);
+  const blocked = completed < total;
+  $("#milestoneProgressPanel").innerHTML = `
+    <div>
+      <span>${completed}/${total}</span>
+      <strong>${blocked ? "Provider tasks still open" : "Provider tasks complete"}</strong>
+      <p>${blocked ? "Complete each mock task below to unlock milestone completion." : "The milestone completion button is now unlocked."}</p>
+    </div>
+    <div class="milestone-progress-bar" aria-label="Provider task completion">
+      <span class="progress-${completed}"></span>
+    </div>
+  `;
+  $("#milestonePortalTitle").textContent = `${milestone.owner} task desk`;
+  $("#milestonePortalStatus").innerHTML = `
+    <p><i>${blocked ? "!" : "✓"}</i><span>${blocked ? "Next required task" : "Ready to advance"}<strong>${nextTask ? nextTask[0] : milestone.completionLabel}</strong></span></p>
+    <p><i>D</i><span>Document placeholders<strong>No files are attached yet; status only.</strong></span></p>
+    <p><i>A</i><span>Allowed demo actions<strong>Mock complete, audit, explain, and hand off.</strong></span></p>
+    <p><i>0</i><span>Real-world boundary<strong>No money, order, policy, report, recording, message, or upload occurs.</strong></span></p>
+  `;
+}
+
 function renderMilestone(milestoneId = demoState.activeMilestone) {
   const milestone = milestoneDefinitions[milestoneId];
   if (!milestone) return;
@@ -1831,17 +2040,33 @@ function renderMilestone(milestoneId = demoState.activeMilestone) {
   $("#milestoneOwner").textContent = milestone.owner;
   $("#milestoneSteps").innerHTML = milestone.steps
     .map(
-      ([title, description, responsibleRole], index) => `
-        <article>
+      ([title, description, responsibleRole], index) => {
+        const done = isMilestoneTaskDone(milestoneId, index);
+        const ready = isMilestoneTaskReady(milestoneId, index);
+        const locked = !done && !ready;
+        const output = milestoneTaskOutputs[milestoneId]?.[index] || "Mock status completed.";
+        return `
+        <article class="${done ? "task-done" : ready ? "task-ready" : "task-locked"}">
           <span>${String(index + 1).padStart(2, "0")}</span>
           <div>
             <strong>${title}</strong>
             <p>${description}</p>
             <small class="task-role"><b>Responsible role</b>${responsibleRole}</small>
+            <small class="task-output"><b>Mock output</b>${output}</small>
           </div>
-          <i>Demo task</i>
+          <div class="task-action-stack">
+            <i>${done ? "Completed" : locked ? "Locked" : "Ready"}</i>
+            <button
+              class="provider-step-button"
+              data-action="complete-provider-task"
+              data-milestone-id="${milestoneId}"
+              data-task-index="${index}"
+              ${done || locked ? "disabled" : ""}
+            >${done ? "Done" : "Mock complete"}</button>
+          </div>
         </article>
-      `,
+      `;
+      },
     )
     .join("");
   $("#milestoneVisibility").innerHTML = milestone.visibility.map((item) => `<p><i>✓</i>${item}</p>`).join("");
@@ -1849,6 +2074,8 @@ function renderMilestone(milestoneId = demoState.activeMilestone) {
   $("#milestoneHandoffBody").textContent = milestone.handoffBody;
   $("#milestoneSafety").textContent = milestone.safety;
   $("#completeMilestone").textContent = milestone.completionLabel;
+  $("#completeMilestone").disabled = !areMilestoneTasksComplete(milestoneId);
+  renderMilestonePortal(milestoneId);
 }
 
 function openMilestone(milestoneId) {
@@ -2149,7 +2376,7 @@ function showToast(message) {
 
 function resetDemo() {
   sandbox.memory.clear();
-  sandbox.audit.clear();
+  sandbox.audit.markBoundary("transaction-demo-reset");
   demoState.currentStep = 1;
   demoState.role = "buyer";
   demoState.stage = "draft";
@@ -2165,6 +2392,7 @@ function resetDemo() {
   demoState.pendingBuyerAction = "";
   demoState.buyerAgreementAcknowledged = false;
   demoState.sellerAgreementAcknowledged = false;
+  demoState.providerTaskCompletions = {};
   demoState.sellerIntakeCompleted = false;
   demoState.buyerIntake = {
     legalName: "",
@@ -2240,8 +2468,18 @@ function resetDemo() {
   renderRoleWorkspace();
   renderFeatureExplorer();
   goToView("home");
-  showToast("The public simulation has been reset. No records were stored.");
+  showToast("The public demo simulation has been reset. No records were stored.");
 }
+
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  if (!(event.target instanceof Element)) return;
+  if (event.target.closest("a, button, input, select, textarea")) return;
+  const actionTarget = event.target.closest('[role="button"][data-action]');
+  if (!actionTarget) return;
+  event.preventDefault();
+  actionTarget.click();
+});
 
 document.addEventListener("click", (event) => {
   const actionButton = event.target.closest("[data-action]");
@@ -2285,15 +2523,15 @@ document.addEventListener("click", (event) => {
     const term = $("#propertySearch").value.trim() || "all demo areas";
     sandbox.providers.invoke("listings", "searchListings", {
       actor: "buyer",
-      criteria: "public-demo-sample-catalog",
+      criteria: "public-sample-catalog",
     });
-    showToast(`Showing public sample results for ${term}. No listing service was searched.`);
+    showToast(`Showing public demo sample results for ${term}. No listing service was searched.`);
   }
   if (action === "explain") openFeature("offers");
   if (action === "filter") {
     actionButton.closest(".filter-row")?.querySelectorAll(".filter").forEach((button) => button.classList.remove("active"));
     actionButton.classList.add("active");
-    showToast(`${actionButton.dataset.filter} applied to the three public sample homes.`);
+    showToast(`${actionButton.dataset.filter} applied to the three public demo sample homes.`);
   }
   if (action === "more-filters") {
     showInfoDialog({
@@ -2424,6 +2662,9 @@ document.addEventListener("click", (event) => {
   }
   if (action === "view-contract") goToView("contract");
   if (action === "view-deed") goToView("deed");
+  if (action === "complete-provider-task") {
+    completeProviderTask(actionButton.dataset.milestoneId, Number(actionButton.dataset.taskIndex));
+  }
   if (action === "edit-contract-terms") {
     demoState.currentStep = 1;
     renderOfferProperty();
@@ -2497,6 +2738,13 @@ document.addEventListener("click", (event) => {
   if (action === "complete-milestone") {
     const milestone = milestoneDefinitions[demoState.activeMilestone];
     if (!milestone) return;
+    if (!areMilestoneTasksComplete(demoState.activeMilestone)) {
+      showValidation("Complete the provider tasks first.", [
+        "Each provider task above must be mock-completed before this stage can unlock the next milestone.",
+        "No real vendor, payment, upload, signature, title, insurance, lending, notary, or recording action occurs.",
+      ]);
+      return;
+    }
     (milestoneProviderCalls[demoState.activeMilestone] || []).forEach(([provider, method]) => {
       sandbox.providers.invoke(provider, method, {
         actor: demoState.role,

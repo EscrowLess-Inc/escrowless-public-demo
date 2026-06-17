@@ -3,7 +3,7 @@
 window.ESCROWLESS_CONFIG = Object.freeze({
   companyName: "EscrowLess, Inc.",
   environment: "public-demo",
-  release: "4.0.0-public",
+  release: "7.0.0-customer-provider-task-portals",
   demoOnly: true,
   mockDataOnly: true,
   publicDemoOnly: true,

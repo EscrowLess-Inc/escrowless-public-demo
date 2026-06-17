@@ -8,18 +8,17 @@
       content="default-src 'self'; connect-src 'none'; form-action 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; worker-src 'none'; base-uri 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'"
     />
     <meta name="referrer" content="no-referrer" />
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content="noindex, nofollow" />
     <meta
       name="description"
-      content="Explore the public EscrowLess product demonstration using simulated transaction data only."
+      content="Public, read-only EscrowLess product demo using simulated transaction data only."
     />
     <meta property="og:title" content="EscrowLess Public Product Demo" />
     <meta
       property="og:description"
-      content="Explore the EscrowLess buyer, seller, offer, document, review, and closing experience."
+      content="Explore the EscrowLess transaction experience with simulated data."
     />
     <meta property="og:type" content="website" />
-    <link rel="canonical" href="https://escrowless.net/" />
     <link rel="icon" href="favicon.ico" />
     <title>EscrowLess | Public Product Demo</title>
     <link rel="stylesheet" href="styles.css?v=8" />
@@ -61,6 +60,7 @@
             <option value="appraiser">Appraiser</option>
             <option value="title">Title / Closing</option>
             <option value="insurance">Insurance</option>
+            <option value="admin">Platform Admin</option>
           </select>
         </label>
         <button class="saved-header-button" data-view-link="saved">
@@ -249,7 +249,7 @@
             <button class="back-button" data-view-link="home">← Home</button>
             <div class="workflow-title-row">
               <div>
-                <p class="eyebrow">Seller intake · Public simulation</p>
+                <p class="eyebrow">Seller intake · Public demo simulation</p>
                 <h1>Tell us about the property.</h1>
                 <p>Nothing entered here is saved, transmitted, or reviewed by a real agent or broker.</p>
               </div>
@@ -467,7 +467,7 @@
             <h1>Questions, feedback, or partnership interest?</h1>
             <p>
               Production intent: this form will send a message directly to EscrowLess.
-              In this public demo, delivery is disabled and no message leaves your browser.
+              In this public demo version, delivery is disabled and no message leaves your browser.
             </p>
           </div>
           <div class="contact-grid">
@@ -877,8 +877,9 @@
             <section class="role-main-card">
               <div class="card-heading">
                 <div><p class="eyebrow">Guided workflow</p><h2>What happens at this stage</h2></div>
-                <span class="live-pill">Public simulation</span>
+                <span class="live-pill">Public demo simulation</span>
               </div>
+              <div class="milestone-progress-panel" id="milestoneProgressPanel"></div>
               <div class="milestone-step-list" id="milestoneSteps"></div>
               <div class="milestone-completion">
                 <p id="milestoneSafety"></p>
@@ -896,8 +897,13 @@
                 <h3 id="milestoneHandoffTitle">Another participant acts next</h3>
                 <p id="milestoneHandoffBody"></p>
               </section>
+              <section class="side-card provider-portal-card">
+                <p class="eyebrow">Provider portal mock</p>
+                <h3 id="milestonePortalTitle">Role task desk</h3>
+                <div class="portal-status-list" id="milestonePortalStatus"></div>
+              </section>
               <section class="side-card safety-card">
-                <p class="eyebrow">Demo boundary</p>
+                <p class="eyebrow">Public demo boundary</p>
                 <strong>No real-world action occurs.</strong>
                 <p>No person, vendor, account, document service, payment rail, or government system is contacted.</p>
               </section>
@@ -945,7 +951,7 @@
         <div class="dashboard-shell">
           <div class="dashboard-header">
             <div>
-              <p class="eyebrow">Complete public product map</p>
+              <p class="eyebrow">Complete product map</p>
               <h1>Explore every planned module.</h1>
               <p>Open any feature to see its production purpose, role access, workflow, safeguards, and current prototype state.</p>
             </div>
@@ -970,17 +976,17 @@
     </footer>
 
     <aside class="legal-dock" aria-label="Persistent demo disclosure">
-      <strong>Public simulation only.</strong>
+      <strong>Public demo simulation only.</strong>
       <span>No agency, fiduciary, contractual, or professional relationship is created. Nothing here can perform a real transaction.</span>
       <button data-action="disclosure">Full disclosure</button>
     </aside>
 
     <dialog class="disclosure-dialog" id="disclosureDialog" aria-labelledby="disclosureTitle">
       <div class="disclosure-dialog-inner">
-        <p class="eyebrow">Public product-demo disclosure</p>
-        <h2 id="disclosureTitle">This is a public product simulation only.</h2>
+        <p class="eyebrow">Public demo disclosure</p>
+        <h2 id="disclosureTitle">This is a public product demonstration only.</h2>
         <p>
-          This public experience uses simulated data and workflows. It is not a real
+          This public demo uses simulated data and workflows. It is not a real
           estate brokerage, legal service, escrow service, title service,
           lending service, insurance service, or other professional service.
         </p>
@@ -1116,7 +1122,7 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    <script src="demo-config.js?v=7"></script>
+    <script src="demo-config.js?v=8"></script>
     <script src="demo-safety.js?v=7"></script>
     <script src="sandbox-platform.js?v=7"></script>
     <script src="agreements.generated.js?v=7"></script>

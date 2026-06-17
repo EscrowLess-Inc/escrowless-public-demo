@@ -24,7 +24,8 @@ Open `index.html` directly in a browser, or serve this folder with any simple st
 5. Negotiate unlimited buyer/seller counteroffers and route agreed terms to
    simulated professional review.
 6. Open the populated purchase contract and follow every stakeholder milestone
-   through the non-recordable mock deed.
+   through provider task portals, safe mock completion gates, and the
+   non-recordable mock deed.
 
 ### Seller
 
@@ -36,7 +37,8 @@ Open `index.html` directly in a browser, or serve this folder with any simple st
    approval gates that prevent listing activation.
 
 Visitors can also save sample homes, view both agreements, explore stakeholder
-roles, and preview a contact workflow. The contact adapter sends nothing.
+roles, mock-complete vendor/service-provider tasks, and preview a contact
+workflow. The contact adapter sends nothing.
 
 The prototype uses sample data and does not contain legally valid forms or live
 third-party integrations.
