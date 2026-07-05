@@ -2,6 +2,7 @@
 
 (() => {
   const config = window.ESCROWLESS_CONFIG;
+  const MODES = Object.freeze(["mock", "sandbox", "production"]);
   const REDACTED_KEYS = new Set([
     "address",
     "authorization",
@@ -93,6 +94,14 @@
     return JSON.parse(JSON.stringify(value));
   }
 
+  function deepFreeze(value) {
+    if (value && typeof value === "object" && !Object.isFrozen(value)) {
+      Object.freeze(value);
+      Object.values(value).forEach(deepFreeze);
+    }
+    return value;
+  }
+
   function redact(value, key = "") {
     if (REDACTED_KEYS.has(String(key).toLowerCase())) return "[redacted]";
     if (Array.isArray(value)) return value.map((item) => redact(item));
@@ -111,9 +120,11 @@
     #listeners = new Set();
 
     record(action, details = {}) {
-      const entry = Object.freeze({
+      const previousEntryId = this.#entries.at(-1)?.id || "GENESIS";
+      const entry = deepFreeze({
         id: `AUD-${String(this.#entries.length + 1).padStart(4, "0")}`,
         sequence: this.#entries.length + 1,
+        previousEntryId,
         timestamp: new Date().toISOString(),
         environment: config.environment,
         action,
@@ -131,9 +142,22 @@
       return this.#entries.slice().reverse().map(clone);
     }
 
-    clear() {
-      this.#entries = [];
-      this.record("audit.session.reset", { actor: "platform" });
+    markBoundary(reason = "session-boundary") {
+      return this.record("audit.session.boundary", {
+        actor: "platform",
+        metadata: { reason },
+      });
+    }
+
+    verify() {
+      return this.#entries.every((entry, index) => {
+        const expectedPrevious = index === 0 ? "GENESIS" : this.#entries[index - 1].id;
+        return (
+          Object.isFrozen(entry) &&
+          entry.sequence === index + 1 &&
+          entry.previousEntryId === expectedPrevious
+        );
+      });
     }
 
     subscribe(listener) {
@@ -144,21 +168,26 @@
 
   class CapabilityGate {
     assertMockProvider(providerKey) {
-      if (
-        !providerDefinitions[providerKey] ||
-        config.environment !== "public-demo" ||
-        config.demoOnly !== true ||
-        config.mockDataOnly !== true ||
-        config.allowMockProviderCalls !== true
-      ) {
+      const providerConfig = config.providers?.[providerKey];
+      if (!providerConfig || providerConfig.mode !== "mock" || providerConfig.credentialState !== "none") {
         throw new Error(`Provider ${providerKey} is not approved for the public demo environment.`);
       }
     }
 
     assertRealCapabilityDisabled(capability) {
-      if (config.realWorldEffectsDisabled !== true) {
+      if (config.productionCapabilities?.[capability] !== false) {
         throw new Error(`Real capability ${capability} must remain disabled.`);
       }
+    }
+
+    productionReadiness(capability) {
+      return {
+        capability,
+        enabled: config.productionCapabilities?.[capability] === true,
+        approvalsComplete: Object.values(config.approvalGates || {}).every(Boolean),
+        credentialsAllowed: false,
+        environmentEligible: config.environment === "production",
+      };
     }
   }
 
@@ -168,7 +197,7 @@
       this.definition = definition;
       this.audit = audit;
       this.gate = gate;
-      this.mode = "mock";
+      this.mode = config.providers[key].mode;
     }
 
     invoke(method, payload = {}) {
@@ -217,6 +246,19 @@
       if (!adapter) throw new Error(`Unknown provider adapter: ${providerKey}`);
       return adapter.invoke(method, payload);
     }
+
+    statuses() {
+      return Object.entries(providerDefinitions).map(([key, definition]) => ({
+        key,
+        label: definition.label,
+        owner: definition.owner,
+        capability: definition.capability,
+        methods: [...definition.methods],
+        mode: config.providers[key].mode,
+        credentialState: config.providers[key].credentialState,
+        realCapabilityEnabled: config.productionCapabilities[definition.capability] === true,
+      }));
+    }
   }
 
   class MemoryTransactionStore {
@@ -249,16 +291,28 @@
     actor: "platform",
     metadata: {
       release: config.release,
-      providerCount: Object.keys(providerDefinitions).length,
+      providerCount: providers.statuses().length,
       networkAllowed: false,
       persistenceAllowed: false,
     },
   });
 
   window.EscrowLessSandbox = Object.freeze({
+    MODES,
     audit,
     gate,
     providers,
     memory,
+    getEnvironmentStatus() {
+      return {
+        environment: config.environment,
+        release: config.release,
+        demoOnly: config.demoOnly,
+        mockDataOnly: config.mockDataOnly,
+        productionCapabilities: clone(config.productionCapabilities),
+        approvalGates: clone(config.approvalGates),
+        providers: providers.statuses(),
+      };
+    },
   });
 })();

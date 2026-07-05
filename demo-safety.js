@@ -3,15 +3,23 @@
 (() => {
   const config = window.ESCROWLESS_CONFIG;
   const features = config?.features || {};
+  const productionCapabilities = config?.productionCapabilities || {};
+  const approvalGates = config?.approvalGates || {};
+  const providers = config?.providers || {};
 
   if (
     config?.environment !== "public-demo" ||
     config?.publicDemoOnly !== true ||
+    config?.realWorldEffectsDisabled !== true ||
     config?.demoOnly !== true ||
     config?.mockDataOnly !== true ||
     config?.allowMockProviderCalls !== true ||
-    config?.realWorldEffectsDisabled !== true ||
-    Object.values(features).some(Boolean)
+    Object.values(features).some(Boolean) ||
+    Object.values(productionCapabilities).some(Boolean) ||
+    Object.values(approvalGates).some(Boolean) ||
+    Object.values(providers).some(
+      (provider) => provider?.mode !== "mock" || provider?.credentialState !== "none",
+    )
   ) {
     throw new Error("Public demo safety configuration is invalid.");
   }

@@ -21,9 +21,11 @@ Open `index.html` directly in a browser, or serve this folder with any simple st
 3. Review the supplied buyer brokerage agreement and use the nonbinding
    mock-acknowledgment control.
 4. Schedule a mock tour or complete the guided offer.
-5. Negotiate unlimited buyer/seller counteroffers and route agreed terms to
+5. Review mock market guidance, live offer-strength scoring, and transparent
+   EscrowLess fee estimates based on the tranche model.
+6. Negotiate unlimited buyer/seller counteroffers and route agreed terms to
    simulated professional review.
-6. Open the populated purchase contract and follow every stakeholder milestone
+7. Open the populated purchase contract and follow every stakeholder milestone
    through provider task portals, safe mock completion gates, and the
    non-recordable mock deed.
 
@@ -37,8 +39,8 @@ Open `index.html` directly in a browser, or serve this folder with any simple st
    approval gates that prevent listing activation.
 
 Visitors can also save sample homes, view both agreements, explore stakeholder
-roles, mock-complete vendor/service-provider tasks, and preview a contact
-workflow. The contact adapter sends nothing.
+roles, mock-complete vendor/service-provider tasks, preview listing-price
+guidance, and preview a contact workflow. The contact adapter sends nothing.
 
 The prototype uses sample data and does not contain legally valid forms or live
 third-party integrations.

@@ -11,17 +11,17 @@
     <meta name="robots" content="noindex, nofollow" />
     <meta
       name="description"
-      content="Public, read-only EscrowLess product demo using simulated transaction data only."
+      content="Public EscrowLess product demo using simulated transaction data only."
     />
-    <meta property="og:title" content="EscrowLess Public Product Demo" />
+    <meta property="og:title" content="EscrowLess Public Demo" />
     <meta
       property="og:description"
-      content="Explore the EscrowLess transaction experience with simulated data."
+      content="Explore the EscrowLess transaction experience with simulated data only."
     />
     <meta property="og:type" content="website" />
     <link rel="icon" href="favicon.ico" />
-    <title>EscrowLess | Public Product Demo</title>
-    <link rel="stylesheet" href="styles.css?v=8" />
+    <title>EscrowLess | Public Demo</title>
+    <link rel="stylesheet" href="styles.css?v=9" />
   </head>
   <body>
     <div class="prototype-banner">
@@ -66,7 +66,7 @@
         <button class="saved-header-button" data-view-link="saved">
           Saved <strong id="savedCount">0</strong>
         </button>
-        <span class="demo-mode-badge">Public demo</span>
+        <span class="demo-mode-badge">Demo only</span>
       </div>
     </header>
 
@@ -295,6 +295,24 @@
                   <span class="money-input"><i>$</i><input id="sellerTargetPrice" type="number" min="0" step="1000" /></span>
                 </label>
                 <label class="field">
+                  <span>Approx. square footage <small>(mock estimator)</small></span>
+                  <input id="sellerSqft" type="number" min="300" step="25" placeholder="2200" />
+                </label>
+                <label class="field">
+                  <span>Year built <small>(mock estimator)</small></span>
+                  <input id="sellerYearBuilt" type="number" min="1700" max="2026" step="1" placeholder="1978" />
+                </label>
+                <label class="field">
+                  <span>Condition <small>(mock estimator)</small></span>
+                  <select id="sellerCondition">
+                    <option>Updated</option>
+                    <option>Excellent</option>
+                    <option>Good</option>
+                    <option>Fair</option>
+                    <option>Needs work</option>
+                  </select>
+                </label>
+                <label class="field">
                   <span>Preferred agent visit</span>
                   <select id="sellerVisitTime">
                     <option value="">Choose a window</option>
@@ -343,6 +361,13 @@
                 <p class="eyebrow">Private data boundary</p>
                 <strong>No intake data leaves this page.</strong>
                 <p>Refreshing or closing the demo erases all temporary seller information.</p>
+              </section>
+              <section class="side-card seller-market-card">
+                <p class="eyebrow">Mock listing estimator</p>
+                <h3 id="sellerRecommendedPrice">$0</h3>
+                <p id="sellerEstimatorText">Enter square footage, age, and condition to preview a sample list-price recommendation.</p>
+                <div class="fee-breakdown" id="sellerFeePreview"></div>
+                <small>Private staging only. This is not an appraisal, CMA, broker opinion, or pricing advice.</small>
               </section>
             </aside>
           </div>
@@ -668,13 +693,25 @@
                 <div class="aside-property" id="asideProperty"></div>
                 <div class="aside-section">
                   <span class="aside-label">Offer strength</span>
-                  <div class="strength-row"><strong>Well positioned</strong><span>78</span></div>
-                  <div class="strength-meter"><i></i></div>
+                  <div class="strength-row"><strong id="offerStrengthLabel">Well positioned</strong><span id="offerStrengthScore">78</span></div>
+                  <div class="strength-meter"><i id="offerStrengthMeter"></i></div>
+                  <div class="strength-factors" id="offerStrengthFactors"></div>
                   <small>Based on price, financing, contingencies, and timeline.</small>
+                </div>
+                <div class="aside-section market-estimator">
+                  <span class="aside-label">Mock AI estimator</span>
+                  <strong id="marketEstimate">$0</strong>
+                  <small id="marketEstimateSummary">Generated from fake comparable transactions, square footage, age, condition, and market temperature.</small>
+                  <div class="market-recommendations">
+                    <div><span>Seller list target</span><strong id="sellerListRecommendation">$0</strong></div>
+                    <div><span>Buyer bid target</span><strong id="buyerBidRecommendation">$0</strong></div>
+                  </div>
+                  <div class="comp-list" id="marketCompList"></div>
                 </div>
                 <div class="aside-section estimate-section">
                   <span class="aside-label">Estimated EscrowLess fees</span>
                   <strong id="feeEstimate">$0</strong>
+                  <div class="fee-breakdown" id="feeBreakdown"></div>
                   <small>Mock estimate only. No fee is quoted, offered, charged, or collected.</small>
                 </div>
                 <div class="human-note">
@@ -951,7 +988,7 @@
         <div class="dashboard-shell">
           <div class="dashboard-header">
             <div>
-              <p class="eyebrow">Complete product map</p>
+              <p class="eyebrow">Complete public demo product map</p>
               <h1>Explore every planned module.</h1>
               <p>Open any feature to see its production purpose, role access, workflow, safeguards, and current prototype state.</p>
             </div>
@@ -976,7 +1013,7 @@
     </footer>
 
     <aside class="legal-dock" aria-label="Persistent demo disclosure">
-      <strong>Public demo simulation only.</strong>
+      <strong>Public simulation only.</strong>
       <span>No agency, fiduciary, contractual, or professional relationship is created. Nothing here can perform a real transaction.</span>
       <button data-action="disclosure">Full disclosure</button>
     </aside>
@@ -984,7 +1021,7 @@
     <dialog class="disclosure-dialog" id="disclosureDialog" aria-labelledby="disclosureTitle">
       <div class="disclosure-dialog-inner">
         <p class="eyebrow">Public demo disclosure</p>
-        <h2 id="disclosureTitle">This is a public product demonstration only.</h2>
+        <h2 id="disclosureTitle">This is a public product simulation only.</h2>
         <p>
           This public demo uses simulated data and workflows. It is not a real
           estate brokerage, legal service, escrow service, title service,
@@ -998,7 +1035,7 @@
           advice.
         </p>
         <p>
-          This product lab cannot create accounts, submit or transmit forms, store
+          This public demo cannot create accounts, submit or transmit forms, store
           records, upload files, send notifications or emails, process
           payments, generate binding contracts, connect to production
           databases, or be used for any real transaction.
@@ -1126,6 +1163,6 @@
     <script src="demo-safety.js?v=7"></script>
     <script src="sandbox-platform.js?v=7"></script>
     <script src="agreements.generated.js?v=7"></script>
-    <script src="app.js?v=8"></script>
+    <script src="app.js?v=9"></script>
   </body>
 </html>

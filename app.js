@@ -25,6 +25,11 @@ const properties = [
     beds: 3,
     baths: 2.5,
     sqft: "2,184",
+    yearBuilt: 1926,
+    condition: "Updated",
+    neighborhood: "Museum District",
+    marketTemperature: "Hot",
+    marketFactor: 1.05,
     days: 4,
     style: "home-a",
     tag: "Sample facts",
@@ -45,6 +50,11 @@ const properties = [
     beds: 4,
     baths: 3,
     sqft: "2,740",
+    yearBuilt: 1907,
+    condition: "Excellent",
+    neighborhood: "Jackson Ward",
+    marketTemperature: "Warm",
+    marketFactor: 1.02,
     days: 8,
     style: "home-b",
     tag: "New listing",
@@ -65,6 +75,11 @@ const properties = [
     beds: 3,
     baths: 2,
     sqft: "1,876",
+    yearBuilt: 1954,
+    condition: "Good",
+    neighborhood: "Stratford Hills",
+    marketTemperature: "Balanced",
+    marketFactor: 0.99,
     days: 2,
     style: "home-c",
     tag: "Open Sunday",
@@ -79,6 +94,39 @@ const properties = [
   },
 ];
 
+const feeSchedule = Object.freeze({
+  platformFee: 1750,
+  sellerMinimumFee: 4000,
+  buyer: Object.freeze([
+    Object.freeze({ label: "First $400k", upTo: 400000, rate: 0.018 }),
+    Object.freeze({ label: "$400k-$800k", upTo: 800000, rate: 0.015 }),
+    Object.freeze({ label: "$800k-$1.75M", upTo: 1750000, rate: 0.01 }),
+    Object.freeze({ label: "$1.75M-$4M", upTo: 4000000, rate: 0.0075 }),
+    Object.freeze({ label: "Above $4M", upTo: Infinity, rate: 0.005 }),
+  ]),
+  seller: Object.freeze([
+    Object.freeze({ label: "First $500k", upTo: 500000, rate: 0.02 }),
+    Object.freeze({ label: "$500k-$1.5M", upTo: 1500000, rate: 0.0125 }),
+    Object.freeze({ label: "$1.5M-$5M", upTo: 5000000, rate: 0.0075 }),
+    Object.freeze({ label: "Above $5M", upTo: Infinity, rate: 0.005 }),
+  ]),
+});
+
+const conditionFactors = Object.freeze({
+  "Needs work": 0.91,
+  Fair: 0.96,
+  Good: 1,
+  Updated: 1.045,
+  Excellent: 1.075,
+});
+
+const marketProfiles = Object.freeze({
+  "Museum District": Object.freeze({ pricePerSqft: 276, heat: 1.025, confidence: "Medium-high" }),
+  "Jackson Ward": Object.freeze({ pricePerSqft: 258, heat: 1.012, confidence: "Medium" }),
+  "Stratford Hills": Object.freeze({ pricePerSqft: 239, heat: 0.996, confidence: "Medium" }),
+  Richmond: Object.freeze({ pricePerSqft: 252, heat: 1.004, confidence: "Medium" }),
+});
+
 const featureCatalog = [
   {
     id: "profiles",
@@ -89,7 +137,7 @@ const featureCatalog = [
     roles: ["Buyer", "Seller", "Reviewer", "Lender", "Vendors", "Admin"],
     workflow: ["Choose a role", "Complete only relevant details", "Verify required items", "Unlock permitted workspace"],
     production: "A production version would authenticate users, verify identity where required, record consent, and enforce role-based access.",
-    safety: "This public demo creates no account, verifies no identity, and stores nothing after the page closes.",
+    safety: "This public demo version creates no account, verifies no identity, and stores nothing after the page closes.",
   },
   {
     id: "listings",
@@ -276,7 +324,7 @@ const featureCatalog = [
     roles: ["Platform Admin", "Compliance", "Broker leadership"],
     workflow: ["Configure approved rules", "Manage role access", "Monitor exceptions", "Audit changes and incidents"],
     production: "High-risk changes would require server-side controls, authentication, least privilege, separation of duties, documented approvals, monitoring, and rollback.",
-    safety: "The separate private admin page changes no system, permission, credential, template, vendor, or persistent record and must be omitted from public deployments.",
+    safety: "The separate public demo admin page changes no system, permission, credential, template, vendor, or persistent record and must be omitted from public deployments.",
   },
 ];
 
@@ -584,7 +632,7 @@ const milestoneDefinitions = {
     ],
     visibility: ["Closing completion", "Recording and disbursement status", "Final-copy delivery", "Archive and audit status"],
     handoffTitle: "The transaction is complete",
-    handoffBody: "The public product demo will mark every milestone complete and preserve the path until reset or refresh.",
+    handoffBody: "The public demo will mark every milestone complete and preserve the path until reset or refresh.",
     safety: "No deed is recorded, no money is disbursed, no keys are delivered, and no legal closing occurs.",
     completionLabel: "Simulate close, recording, and archive",
     nextStage: "closed",
@@ -738,6 +786,9 @@ const demoState = {
     authority: "",
     coOwners: "",
     targetPrice: "",
+    sqft: "",
+    yearBuilt: "",
+    condition: "Updated",
     visitTime: "",
     currentlyListed: "",
   },
@@ -795,6 +846,210 @@ function formatDate(value) {
     year: "numeric",
     timeZone: "UTC",
   }).format(new Date(`${value}T00:00:00Z`));
+}
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function numericSquareFeet(value) {
+  return Number(String(value || "").replace(/[^\d.]/g, "")) || 0;
+}
+
+function roundToIncrement(value, increment = 1000) {
+  return Math.round((Number(value) || 0) / increment) * increment;
+}
+
+function hashString(value) {
+  return String(value)
+    .split("")
+    .reduce((hash, character) => (hash * 31 + character.charCodeAt(0)) >>> 0, 2166136261);
+}
+
+function seededUnit(seed) {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
+
+function seededRange(seed, min, max) {
+  return min + seededUnit(seed) * (max - min);
+}
+
+function conditionFactor(condition) {
+  return conditionFactors[condition] || conditionFactors.Good;
+}
+
+function propertyAge(yearBuilt) {
+  const year = Number(yearBuilt) || 1978;
+  return clamp(2026 - year, 0, 225);
+}
+
+function ageFactor(yearBuilt) {
+  const age = propertyAge(yearBuilt);
+  return clamp(1.045 - age * 0.00125, 0.84, 1.045);
+}
+
+function profileForSubject(subject) {
+  return marketProfiles[subject.neighborhood] || marketProfiles.Richmond;
+}
+
+function generateMockComparableSales(subject) {
+  const sqft = numericSquareFeet(subject.sqft) || 2200;
+  const profile = profileForSubject(subject);
+  const seedBase = hashString(`${subject.id || subject.address || "seller"}-${sqft}-${subject.yearBuilt}`);
+  return [0, 1, 2, 3, 4].map((index) => {
+    const seed = seedBase + index * 97;
+    const compSqft = roundToIncrement(sqft * seededRange(seed, 0.88, 1.14), 25);
+    const compAge = clamp(Math.round(propertyAge(subject.yearBuilt) + seededRange(seed + 11, -18, 16)), 1, 170);
+    const compPpsf = profile.pricePerSqft * seededRange(seed + 23, 0.91, 1.1);
+    const compCondition = seededUnit(seed + 31) > 0.7 ? "Excellent" : seededUnit(seed + 37) > 0.42 ? "Updated" : "Good";
+    const rawSalePrice = compSqft * compPpsf * conditionFactor(compCondition) * profile.heat;
+    const sqftAdjustment = (sqft - compSqft) * profile.pricePerSqft * 0.42;
+    const ageAdjustment = (compAge - propertyAge(subject.yearBuilt)) * profile.pricePerSqft * sqft * 0.0016;
+    const conditionAdjustment = (conditionFactor(subject.condition) - conditionFactor(compCondition)) * rawSalePrice * 0.72;
+    const adjustedPrice = roundToIncrement(rawSalePrice + sqftAdjustment + ageAdjustment + conditionAdjustment, 1000);
+    return {
+      label: `Mock comp ${index + 1}`,
+      sqft: compSqft,
+      age: compAge,
+      condition: compCondition,
+      soldPrice: roundToIncrement(rawSalePrice, 1000),
+      adjustedPrice,
+      weight: Number((1 - index * 0.11).toFixed(2)),
+    };
+  });
+}
+
+function estimateSubjectValue(subject) {
+  const sqft = numericSquareFeet(subject.sqft) || 2200;
+  const profile = profileForSubject(subject);
+  const comps = generateMockComparableSales(subject);
+  const weightedTotal = comps.reduce((sum, comp) => sum + comp.adjustedPrice * comp.weight, 0);
+  const weightTotal = comps.reduce((sum, comp) => sum + comp.weight, 0);
+  const compEstimate = weightedTotal / weightTotal;
+  const subjectAdjustment = conditionFactor(subject.condition) * ageFactor(subject.yearBuilt) * (subject.marketFactor || profile.heat);
+  const estimate = roundToIncrement(compEstimate * subjectAdjustment, 1000);
+  const listPremium =
+    subject.marketTemperature === "Hot" ? 0.018 : subject.marketTemperature === "Warm" ? 0.01 : 0.002;
+  const recommendedListPrice = roundToIncrement(estimate * (1 + listPremium), 1000);
+  return {
+    comps,
+    estimate,
+    recommendedListPrice,
+    pricePerSqft: Math.round(estimate / sqft),
+    confidence: profile.confidence,
+  };
+}
+
+function getOfferInputs() {
+  return {
+    price: Number($("#offerPrice")?.value || demoState.offer.price),
+    financing: $("#financingType")?.value || demoState.offer.financing,
+    downPayment: Number($("#downPayment")?.value || demoState.offer.downPayment),
+    earnestMoney: Number($("#earnestMoney")?.value || demoState.offer.earnestMoney),
+    closingDate: $("#closingDate")?.value || demoState.offer.closingDate,
+    responseDate: $("#responseDate")?.value || demoState.offer.responseDate,
+    contingencies: {
+      inspection: Boolean($("#inspectionContingency")?.checked),
+      financing: Boolean($("#financingContingency")?.checked),
+      appraisal: Boolean($("#appraisalContingency")?.checked),
+      homeSale: Boolean($("#homeSaleContingency")?.checked),
+    },
+  };
+}
+
+function getRecommendedBid(valuation, inputs = getOfferInputs()) {
+  const property = getProperty();
+  const financingLift =
+    inputs.financing === "Cash" ? 0.012 : inputs.financing === "Conventional loan" && inputs.downPayment >= 20 ? 0.004 : -0.007;
+  const contingencyDrag =
+    (inputs.contingencies.inspection ? 0.003 : -0.002) +
+    (inputs.contingencies.financing ? 0.006 : -0.004) +
+    (inputs.contingencies.appraisal ? 0.004 : -0.003) +
+    (inputs.contingencies.homeSale ? 0.018 : 0);
+  const heatPremium = property.marketTemperature === "Hot" ? 0.012 : property.marketTemperature === "Warm" ? 0.006 : 0;
+  const target = valuation.estimate * (0.992 + heatPremium + financingLift - contingencyDrag);
+  return roundToIncrement(clamp(target, valuation.estimate * 0.94, property.price * 1.055), 1000);
+}
+
+function calculateTrancheFee(amount, tranches) {
+  let previousCap = 0;
+  return tranches.reduce((sum, tranche) => {
+    const cap = tranche.upTo;
+    const taxable = Math.max(0, Math.min(amount, cap) - previousCap);
+    previousCap = cap;
+    return sum + taxable * tranche.rate;
+  }, 0);
+}
+
+function calculateEscrowLessFee(amount, side = "buyer") {
+  const price = Number(amount) || 0;
+  const commission = calculateTrancheFee(price, feeSchedule[side]);
+  const representationFee = side === "seller" ? Math.max(commission, feeSchedule.sellerMinimumFee) : commission;
+  const total = representationFee + feeSchedule.platformFee;
+  return {
+    side,
+    representationFee,
+    platformFee: feeSchedule.platformFee,
+    total,
+    effectiveRate: price ? (total / price) * 100 : 0,
+  };
+}
+
+function daysBetween(startValue, endValue) {
+  if (!startValue || !endValue) return 0;
+  const start = new Date(`${startValue}T00:00:00Z`).getTime();
+  const end = new Date(`${endValue}T00:00:00Z`).getTime();
+  return Math.round((end - start) / 86400000);
+}
+
+function calculateOfferStrength() {
+  const property = getProperty();
+  const valuation = estimateSubjectValue(property);
+  const inputs = getOfferInputs();
+  const recommendedBid = getRecommendedBid(valuation, inputs);
+  const listRatio = property.price ? inputs.price / property.price : 1;
+  const bidRatio = recommendedBid ? inputs.price / recommendedBid : 1;
+  const earnestRatio = inputs.price ? inputs.earnestMoney / inputs.price : 0;
+  const closingDays = daysBetween(new Date().toISOString().slice(0, 10), inputs.closingDate);
+  const responseDays = daysBetween(new Date().toISOString().slice(0, 10), inputs.responseDate);
+
+  const priceScore = clamp(26 + (bidRatio - 1) * 110 + (listRatio - 1) * 38, 4, 35);
+  const financingScore =
+    inputs.financing === "Cash"
+      ? 20
+      : inputs.financing === "Conventional loan"
+        ? clamp(12 + inputs.downPayment * 0.25, 12, 18)
+        : inputs.financing === "VA loan"
+          ? 13
+          : 12;
+  const earnestScore = earnestRatio >= 0.03 ? 15 : earnestRatio >= 0.02 ? 12 : earnestRatio >= 0.01 ? 9 : 5;
+  const contingencyScore = clamp(
+    20 -
+      (inputs.contingencies.inspection ? 3 : 0) -
+      (inputs.contingencies.financing ? 5 : 0) -
+      (inputs.contingencies.appraisal ? 4 : 0) -
+      (inputs.contingencies.homeSale ? 10 : 0),
+    4,
+    20,
+  );
+  const closingScore = closingDays > 0 ? (closingDays <= 30 ? 10 : closingDays <= 45 ? 9 : closingDays <= 60 ? 7 : 5) : 4;
+  const responseScore = responseDays > 0 ? (responseDays <= 2 ? 5 : responseDays <= 5 ? 3 : 1) : 1;
+  const score = Math.round(clamp(priceScore + financingScore + earnestScore + contingencyScore + closingScore + responseScore, 0, 100));
+  const label = score >= 86 ? "Very strong" : score >= 72 ? "Well positioned" : score >= 58 ? "Competitive but review" : "Needs strengthening";
+
+  return {
+    score,
+    label,
+    recommendedBid,
+    valuation,
+    factors: [
+      `Price ${Math.round(listRatio * 100)}% of list`,
+      `${inputs.financing}${inputs.financing === "Cash" ? "" : ` · ${inputs.downPayment}% down`}`,
+      `${(earnestRatio * 100).toFixed(1)}% earnest money`,
+      `${Object.values(inputs.contingencies).filter(Boolean).length} protections selected`,
+    ],
+  };
 }
 
 function getProperty() {
@@ -1334,6 +1589,9 @@ function collectSellerIntake() {
     authority: getFieldValue("sellerAuthority"),
     coOwners: getFieldValue("sellerCoOwners"),
     targetPrice: getFieldValue("sellerTargetPrice"),
+    sqft: getFieldValue("sellerSqft"),
+    yearBuilt: getFieldValue("sellerYearBuilt"),
+    condition: getFieldValue("sellerCondition") || "Updated",
     visitTime: getFieldValue("sellerVisitTime"),
     currentlyListed: getFieldValue("sellerCurrentlyListed"),
   };
@@ -1565,7 +1823,7 @@ function renderOfferProperty() {
   $("#responseDate").value = demoState.offer.responseDate;
   $("#includedItems").value = demoState.offer.includedItems;
   $("#buyerNote").value = demoState.offer.note;
-  updateFeeEstimate();
+  updateOfferInsights();
 }
 
 function updateOfferFromForm() {
@@ -1581,12 +1839,82 @@ function updateOfferFromForm() {
 
 function updateFeeEstimate() {
   const price = Number($("#offerPrice")?.value || demoState.offer.price);
-  const first = Math.min(price, 400000) * 0.018;
-  const second = Math.max(0, Math.min(price, 800000) - 400000) * 0.015;
-  const third = Math.max(0, price - 800000) * 0.01;
-  const representationFee = first + second + third;
-  const illustrativeTotal = representationFee + 1750;
-  $("#feeEstimate").textContent = money(illustrativeTotal);
+  const fee = calculateEscrowLessFee(price, "buyer");
+  $("#feeEstimate").textContent = money(fee.total);
+  $("#feeBreakdown").innerHTML = `
+    <div><span>Buyer representation</span><strong>${money(fee.representationFee)}</strong></div>
+    <div><span>Platform fee</span><strong>${money(fee.platformFee)}</strong></div>
+    <div><span>Effective rate</span><strong>${fee.effectiveRate.toFixed(2)}%</strong></div>
+  `;
+}
+
+function updateMarketEstimator() {
+  const property = getProperty();
+  const insights = calculateOfferStrength();
+  const { valuation, recommendedBid } = insights;
+  $("#marketEstimate").textContent = money(valuation.estimate);
+  $("#marketEstimateSummary").textContent =
+    `Mock ${valuation.confidence.toLowerCase()} confidence estimate · ${money(valuation.pricePerSqft)} per sq ft · ${property.marketTemperature.toLowerCase()} sample market.`;
+  $("#sellerListRecommendation").textContent = money(valuation.recommendedListPrice);
+  $("#buyerBidRecommendation").textContent = money(recommendedBid);
+  $("#marketCompList").innerHTML = valuation.comps
+    .slice(0, 3)
+    .map(
+      (comp) => `
+        <div>
+          <span>${comp.label}</span>
+          <strong>${money(comp.adjustedPrice)}</strong>
+          <small>${comp.sqft.toLocaleString()} sq ft · ${comp.age} yrs · ${comp.condition}</small>
+        </div>
+      `,
+    )
+    .join("");
+}
+
+function updateOfferStrength() {
+  const strength = calculateOfferStrength();
+  $("#offerStrengthLabel").textContent = strength.label;
+  $("#offerStrengthScore").textContent = strength.score;
+  $("#offerStrengthMeter").style.width = `${strength.score}%`;
+  $("#offerStrengthFactors").innerHTML = strength.factors.map((factor) => `<span>${escapeHTML(factor)}</span>`).join("");
+}
+
+function updateOfferInsights() {
+  updateFeeEstimate();
+  updateMarketEstimator();
+  updateOfferStrength();
+}
+
+function getSellerEstimatorSubject() {
+  const targetPrice = Number($("#sellerTargetPrice")?.value || demoState.sellerIntake.targetPrice);
+  return {
+    id: "seller-intake",
+    price: targetPrice || 0,
+    address: getFieldValue("sellerPropertyAddress") || "Seller intake property",
+    sqft: getFieldValue("sellerSqft") || "2200",
+    yearBuilt: Number(getFieldValue("sellerYearBuilt")) || 1978,
+    condition: getFieldValue("sellerCondition") || "Updated",
+    neighborhood: "Richmond",
+    marketTemperature: "Warm",
+    marketFactor: 1.004,
+  };
+}
+
+function renderSellerEstimator() {
+  if (!$("#sellerRecommendedPrice")) return;
+  const subject = getSellerEstimatorSubject();
+  const valuation = estimateSubjectValue(subject);
+  const activeListPrice = Number($("#sellerTargetPrice")?.value || 0) || valuation.recommendedListPrice;
+  const sellerFee = calculateEscrowLessFee(activeListPrice, "seller");
+  $("#sellerRecommendedPrice").textContent = money(valuation.recommendedListPrice);
+  $("#sellerEstimatorText").textContent =
+    `Generated from fake Richmond comps, ${numericSquareFeet(subject.sqft).toLocaleString()} sq ft, ${propertyAge(subject.yearBuilt)} years old, and ${subject.condition.toLowerCase()} condition.`;
+  $("#sellerFeePreview").innerHTML = `
+    <div><span>List price used</span><strong>${money(activeListPrice)}</strong></div>
+    <div><span>Listing fee</span><strong>${money(sellerFee.representationFee)}</strong></div>
+    <div><span>Platform fee</span><strong>${money(sellerFee.platformFee)}</strong></div>
+    <div><span>Total estimate</span><strong>${money(sellerFee.total)}</strong></div>
+  `;
 }
 
 function showInfoDialog({ eyebrow = "Feature simulation", title, body, details = [], actionLabel = "Return to the demo" }) {
@@ -1691,7 +2019,7 @@ function renderContract() {
   $("#contractDocument").innerHTML = `
     <div class="contract-watermark">SIMULATION · UNOFFICIAL · NOT BINDING · CANNOT BE SIGNED</div>
     <header class="contract-header">
-      <p>EscrowLess public product demo · Offer EL-1048 · Negotiated version ${demoState.negotiation.version}</p>
+      <p>EscrowLess public demo · Offer EL-1048 · Negotiated version ${demoState.negotiation.version}</p>
       <h1>Mock Residential Purchase and Sale Agreement</h1>
       <strong>Legal-style textual prototype populated from simulated deal terms</strong>
     </header>
@@ -1873,7 +2201,7 @@ function renderDeed() {
   $("#deedDocument").innerHTML = `
     <div class="contract-watermark">SIMULATED DEED · NOT RECORDABLE · NO CONVEYANCE</div>
     <header class="contract-header deed-header">
-      <p>Prepared solely for the EscrowLess public product demo</p>
+      <p>Prepared solely for the EscrowLess public demo</p>
       <h1>Mock Special Warranty Deed</h1>
       <strong>After-closing document preview · Instrument EL-DEMO-1048</strong>
     </header>
@@ -2110,6 +2438,7 @@ function renderStep() {
   $("#previousStep").style.visibility = demoState.currentStep === 1 ? "hidden" : "visible";
   $("#nextStep").textContent = demoState.currentStep === 4 ? "Simulate offer submission" : "Continue";
   $("#nextStep").classList.toggle("submit-offer-button", demoState.currentStep === 4);
+  updateOfferInsights();
   if (demoState.currentStep === 4) renderReviewSummary();
 }
 
@@ -2133,6 +2462,7 @@ function goToView(name) {
   if (name === "features") renderFeatureExplorer();
   if (name === "saved") renderSavedProperties();
   if (name === "tour") renderTour();
+  if (name === "seller") renderSellerEstimator();
   if (name === "sellerReview") renderSellerReviewStatus();
 }
 
@@ -2410,6 +2740,9 @@ function resetDemo() {
     authority: "",
     coOwners: "",
     targetPrice: "",
+    sqft: "",
+    yearBuilt: "",
+    condition: "Updated",
     visitTime: "",
     currentlyListed: "",
   };
@@ -2443,6 +2776,8 @@ function resetDemo() {
     "sellerAuthority",
     "sellerCoOwners",
     "sellerTargetPrice",
+    "sellerSqft",
+    "sellerYearBuilt",
     "sellerVisitTime",
     "sellerCurrentlyListed",
     "contactName",
@@ -2456,12 +2791,14 @@ function resetDemo() {
     const field = $(`#${id}`);
     if (field) field.value = "";
   });
+  $("#sellerCondition").value = "Updated";
   $("#contactConsent").checked = false;
   renderOfferProperty();
   renderProperties();
   renderPropertyDetail();
   renderSavedProperties();
   renderSellerReviewStatus();
+  renderSellerEstimator();
   updateSavedCount();
   renderStep();
   renderWorkspace();
@@ -2523,7 +2860,7 @@ document.addEventListener("click", (event) => {
     const term = $("#propertySearch").value.trim() || "all demo areas";
     sandbox.providers.invoke("listings", "searchListings", {
       actor: "buyer",
-      criteria: "public-sample-catalog",
+      criteria: "public-demo-sample-catalog",
     });
     showToast(`Showing public demo sample results for ${term}. No listing service was searched.`);
   }
@@ -2786,7 +3123,12 @@ $("#offerForm").addEventListener("input", (event) => {
     event.target.closest(".choice-card").classList.toggle("selected", event.target.checked);
   }
   updateOfferFromForm();
-  updateFeeEstimate();
+  updateOfferInsights();
+});
+
+$("#sellerIntakeForm").addEventListener("input", () => {
+  collectSellerIntake();
+  renderSellerEstimator();
 });
 
 $("#nextStep").addEventListener("click", () => {
@@ -2829,6 +3171,7 @@ renderWorkspace();
 renderRoleWorkspace();
 renderFeatureExplorer();
 renderSellerReviewStatus();
+renderSellerEstimator();
 updateSavedCount();
 
 $("#disclosureDialog").showModal();
