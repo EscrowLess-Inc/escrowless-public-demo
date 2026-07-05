@@ -3118,13 +3118,16 @@ $("#roleSelect").addEventListener("change", (event) => {
   goToView("role");
 });
 
-$("#offerForm").addEventListener("input", (event) => {
+function refreshOfferInsightsFromForm(event) {
   if (event.target.closest(".choice-card")) {
     event.target.closest(".choice-card").classList.toggle("selected", event.target.checked);
   }
   updateOfferFromForm();
   updateOfferInsights();
-});
+}
+
+$("#offerForm").addEventListener("input", refreshOfferInsightsFromForm);
+$("#offerForm").addEventListener("change", refreshOfferInsightsFromForm);
 
 $("#sellerIntakeForm").addEventListener("input", () => {
   collectSellerIntake();
