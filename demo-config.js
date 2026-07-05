@@ -3,7 +3,7 @@
 window.ESCROWLESS_CONFIG = Object.freeze({
   companyName: "EscrowLess, Inc.",
   environment: "public-demo",
-  release: "8.0.0-market-estimator-fee-model",
+  release: "8.0.1-offer-strength-refresh",
   demoOnly: true,
   mockDataOnly: true,
   publicDemoOnly: true,

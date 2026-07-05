@@ -77,4 +77,15 @@
     },
     true,
   );
+
+  document.addEventListener("change", (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLInputElement || target instanceof HTMLSelectElement || target instanceof HTMLTextAreaElement)) {
+      return;
+    }
+    if (!target.closest("#offerForm")) return;
+    window.setTimeout(() => {
+      target.dispatchEvent(new Event("input", { bubbles: true }));
+    }, 0);
+  });
 })();
