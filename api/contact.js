@@ -6,6 +6,7 @@ const nodemailer = require("nodemailer");
 const DESTINATION_EMAIL = "info@escrowless.net";
 const FROM_NAME = "EscrowLess Contact Form";
 const SOURCE_LABEL = "escrowless.net contact form";
+const ESCROWLESS_EMAIL_PATTERN = /^[a-z0-9._%+-]+@escrowless\.net$/i;
 const MAX_BODY_BYTES = 12 * 1024;
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 const RATE_LIMITS = Object.freeze({
@@ -261,13 +262,14 @@ function buildEmailText(submission, submissionId, timestamp) {
 }
 
 function createTransport(port, secure) {
+  const smtpUser = process.env.CONTACT_SMTP_USER?.trim();
   return nodemailer.createTransport({
     host: process.env.CONTACT_SMTP_HOST || "mail.privateemail.com",
     port,
     secure,
     requireTLS: !secure,
     auth: {
-      user: process.env.CONTACT_SMTP_USER,
+      user: smtpUser,
       pass: process.env.CONTACT_SMTP_PASSWORD,
     },
     connectionTimeout: 10000,
@@ -277,17 +279,18 @@ function createTransport(port, secure) {
 }
 
 async function sendContactEmail(submission, submissionId, timestamp) {
-  if (!process.env.CONTACT_SMTP_USER || !process.env.CONTACT_SMTP_PASSWORD) {
+  const smtpUser = process.env.CONTACT_SMTP_USER?.trim();
+  if (!smtpUser || !process.env.CONTACT_SMTP_PASSWORD) {
     throw new Error("smtp_config_missing");
   }
-  if (process.env.CONTACT_SMTP_USER.trim().toLowerCase() !== DESTINATION_EMAIL) {
+  if (!ESCROWLESS_EMAIL_PATTERN.test(smtpUser)) {
     throw new Error("smtp_config_invalid_user");
   }
 
   const subject = `EscrowLess contact form submission — ${submission.category} — ${submissionId}`;
   const mail = {
     to: DESTINATION_EMAIL,
-    from: { name: FROM_NAME, address: DESTINATION_EMAIL },
+    from: { name: FROM_NAME, address: smtpUser },
     replyTo: submission.email,
     subject,
     text: buildEmailText(submission, submissionId, timestamp),

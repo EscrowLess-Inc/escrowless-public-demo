@@ -90,8 +90,8 @@ Create these manually in Vercel. Use Sensitive Environment Variables where
 available.
 
 ```text
-CONTACT_SMTP_USER=info@escrowless.net
-CONTACT_SMTP_PASSWORD=[Namecheap Private Email mailbox password or app-specific SMTP credential]
+CONTACT_SMTP_USER=adam@escrowless.net
+CONTACT_SMTP_PASSWORD=[Namecheap Private Email password for the real mailbox]
 ```
 
 Optional:
@@ -108,6 +108,10 @@ If `CONTACT_BOT_PROVIDER` and `CONTACT_BOT_SECRET` are omitted, the contact form
 uses server-side validation, rate limiting, and a honeypot only. A future
 Turnstile or hCaptcha widget will require a frontend widget token and CSP
 updates for that provider.
+
+`info@escrowless.net` may remain an alias. The SMTP username must be a real
+EscrowLess mailbox that can authenticate to Namecheap Private Email. The
+endpoint still delivers every submission only to `info@escrowless.net`.
 
 ### Local test plan
 
