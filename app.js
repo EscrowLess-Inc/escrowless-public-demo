@@ -313,7 +313,7 @@ const featureCatalog = [
     roles: ["All transaction roles"],
     workflow: ["Choose permitted recipient", "Select or write message", "Review sensitive content", "Send and record delivery"],
     production: "A production system would enforce permissions, retention, consent, delivery controls, and support escalation.",
-    safety: "No email, text, push notification, or in-platform message can be sent from this lab.",
+    safety: "No transaction email, text, push notification, or in-platform message can be sent from this lab. The public contact form is the only narrow email exception.",
   },
   {
     id: "admin",
@@ -811,6 +811,18 @@ const demoState = {
   },
 };
 
+const contactCategories = Object.freeze([
+  "General",
+  "Partnerships",
+  "Investors",
+  "Press",
+  "Careers",
+  "Billing",
+  "Support",
+  "Legal",
+  "Compliance",
+]);
+
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
@@ -827,7 +839,7 @@ function getFieldValue(id) {
 }
 
 function isLikelyEmail(value) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  return /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i.test(value);
 }
 
 function money(value) {
@@ -1747,62 +1759,103 @@ function submitSellerForReview() {
   goToView("sellerReview");
 }
 
-function previewContactMessage() {
+function setContactStatus(message, type = "") {
+  const status = $("#contactStatus");
+  if (!status) return;
+  status.textContent = message;
+  status.classList.remove("success", "error");
+  if (type) status.classList.add(type);
+}
+
+async function submitContactMessage() {
   const name = getFieldValue("contactName");
   const email = getFieldValue("contactEmail");
+  const phone = getFieldValue("contactPhone");
   const topic = getFieldValue("contactTopic");
   const message = getFieldValue("contactMessage");
+  const website = getFieldValue("contactWebsite");
+  const botToken = getFieldValue("contactBotToken");
   const messages = [];
   let focusId = "";
   if (!name) {
     messages.push("Enter your name.");
     focusId ||= "contactName";
+  } else if (name.length > 100) {
+    messages.push("Keep your name under 100 characters.");
+    focusId ||= "contactName";
   }
   if (!isLikelyEmail(email)) {
     messages.push("Enter a valid email address.");
     focusId ||= "contactEmail";
+  } else if (email.length > 254) {
+    messages.push("Keep your email under 254 characters.");
+    focusId ||= "contactEmail";
   }
-  if (!topic) {
-    messages.push("Choose a message topic.");
+  if (phone.length > 40) {
+    messages.push("Keep your phone number under 40 characters.");
+    focusId ||= "contactPhone";
+  }
+  if (!contactCategories.includes(topic)) {
+    messages.push("Choose a contact reason.");
     focusId ||= "contactTopic";
   }
   if (!message) {
     messages.push("Enter a question, comment, or concern.");
     focusId ||= "contactMessage";
+  } else if (message.length > 2000) {
+    messages.push("Keep your message under 2,000 characters.");
+    focusId ||= "contactMessage";
   }
   if (!$("#contactConsent").checked) {
-    messages.push("Acknowledge that the public demo will not send this message.");
+    messages.push("Confirm that you will not submit sensitive private or financial information through this basic contact form.");
     focusId ||= "contactConsent";
   }
   if (messages.length) {
-    showValidation("Complete the contact preview.", messages, focusId);
+    showValidation("Complete the contact form.", messages, focusId);
     return;
   }
 
-  const result = sandbox.providers.invoke("contactDelivery", "sendContactMessage", {
-    actor: "visitor",
-    name,
-    email,
-    topic,
-    message,
-  });
-  audit("contact.message.previewed", {
-    topic,
-    simulationId: result.simulationId,
-    delivered: result.delivered,
-  });
-  showInfoDialog({
-    eyebrow: "Contact workflow preview",
-    title: "Your message was not sent.",
-    body: "The public demo adapter validated the workflow without delivering or storing any contact information.",
-    details: [
-      ["Future destination", "EscrowLess, Inc. contact inbox after privacy, security, spam-control, and email-provider approval."],
-      ["Current provider", "Mock contact-delivery adapter."],
-      ["Delivery status", "Disabled. No email, notification, database write, or analytics event occurred."],
-      ["Next production gate", "Approve contact disclosures, retention, response ownership, abuse controls, and a transactional-email provider."],
-    ],
-    actionLabel: "Return to contact page",
-  });
+  const submitButton = $("#contactSubmitButton");
+  submitButton.disabled = true;
+  setContactStatus("Sending securely to EscrowLess...", "");
+
+  try {
+    const response = await fetch("/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({
+        name,
+        email,
+        phone,
+        category: topic,
+        message,
+        consent: true,
+        website,
+        botToken,
+      }),
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || !result.ok) {
+      throw new Error(result.message || "The message could not be sent.");
+    }
+    audit("contact.message.sent", {
+      category: topic,
+      submissionId: result.submissionId,
+      destination: "info@escrowless.net",
+    }, "submitted");
+    setContactStatus(`Message sent to EscrowLess. Submission ID: ${result.submissionId}`, "success");
+    ["contactName", "contactEmail", "contactPhone", "contactTopic", "contactMessage", "contactWebsite", "contactBotToken"].forEach((id) => {
+      const field = $(`#${id}`);
+      if (field) field.value = "";
+    });
+    $("#contactConsent").checked = false;
+  } catch {
+    audit("contact.message.failed", { category: topic }, "failed");
+    setContactStatus("Your message was not sent. Please try again in a few minutes.", "error");
+  } finally {
+    submitButton.disabled = false;
+  }
 }
 
 function renderOfferProperty() {
@@ -2785,6 +2838,8 @@ function resetDemo() {
     "contactPhone",
     "contactTopic",
     "contactMessage",
+    "contactWebsite",
+    "contactBotToken",
     "tourDay",
     "tourTime",
   ].forEach((id) => {
@@ -2793,6 +2848,7 @@ function resetDemo() {
   });
   $("#sellerCondition").value = "Updated";
   $("#contactConsent").checked = false;
+  setContactStatus("");
   renderOfferProperty();
   renderProperties();
   renderPropertyDetail();
@@ -2979,7 +3035,7 @@ document.addEventListener("click", (event) => {
     $("#infoDialog").close();
     goToView("property");
   }
-  if (action === "preview-contact") previewContactMessage();
+  if (action === "submit-contact") submitContactMessage();
   if (action === "preview-upload") {
     showInfoDialog({
       eyebrow: "Secure-document concept",

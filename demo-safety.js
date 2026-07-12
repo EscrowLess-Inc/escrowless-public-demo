@@ -6,6 +6,19 @@
   const productionCapabilities = config?.productionCapabilities || {};
   const approvalGates = config?.approvalGates || {};
   const providers = config?.providers || {};
+  const allowedBrowserFeatures = new Set(["publicContactForm"]);
+  const originalFetch = window.fetch?.bind(window);
+
+  const hasUnexpectedEnabledFeature = Object.entries(features).some(
+    ([feature, enabled]) => enabled === true && !allowedBrowserFeatures.has(feature),
+  );
+
+  const hasUnexpectedProviderMode = Object.entries(providers).some(([name, provider]) => {
+    if (name === "contactDelivery") {
+      return provider?.mode !== "server-smtp" || provider?.credentialState !== "server-only-env";
+    }
+    return provider?.mode !== "mock" || provider?.credentialState !== "none";
+  });
 
   if (
     config?.environment !== "public-demo" ||
@@ -14,12 +27,11 @@
     config?.demoOnly !== true ||
     config?.mockDataOnly !== true ||
     config?.allowMockProviderCalls !== true ||
-    Object.values(features).some(Boolean) ||
+    config?.allowLiveContactForm !== true ||
+    hasUnexpectedEnabledFeature ||
     Object.values(productionCapabilities).some(Boolean) ||
     Object.values(approvalGates).some(Boolean) ||
-    Object.values(providers).some(
-      (provider) => provider?.mode !== "mock" || provider?.credentialState !== "none",
-    )
+    hasUnexpectedProviderMode
   ) {
     throw new Error("Public demo safety configuration is invalid.");
   }
@@ -28,7 +40,37 @@
     throw new Error("Network and production operations are disabled in the public demo.");
   };
 
-  for (const name of ["fetch", "XMLHttpRequest", "WebSocket", "EventSource"]) {
+  function isAllowedContactRequest(resource, init = {}) {
+    try {
+      const url = new URL(typeof resource === "string" ? resource : resource?.url, window.location.origin);
+      const method = String(init.method || resource?.method || "GET").toUpperCase();
+      return (
+        originalFetch &&
+        method === "POST" &&
+        url.origin === window.location.origin &&
+        url.pathname === "/api/contact"
+      );
+    } catch {
+      return false;
+    }
+  }
+
+  try {
+    Object.defineProperty(window, "fetch", {
+      configurable: false,
+      writable: false,
+      value: (resource, init = {}) => {
+        if (isAllowedContactRequest(resource, init)) {
+          return originalFetch(resource, { ...init, credentials: "same-origin" });
+        }
+        return blocked();
+      },
+    });
+  } catch {
+    // The Content Security Policy remains the primary enforcement layer.
+  }
+
+  for (const name of ["XMLHttpRequest", "WebSocket", "EventSource"]) {
     try {
       Object.defineProperty(window, name, {
         configurable: false,

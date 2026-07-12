@@ -4595,6 +4595,52 @@ button[data-action="view-contract"]:hover,
   padding-bottom: 90px;
 }
 
+.contact-warning {
+  margin-bottom: 22px;
+  padding: 18px;
+  border: 1px solid rgba(185, 28, 28, 0.18);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(254, 242, 242, 0.98), rgba(255, 247, 237, 0.94));
+  color: #7f1d1d;
+}
+
+.contact-warning strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.contact-warning p {
+  margin: 0;
+  color: #9a3412;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.hidden-honeypot {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.contact-status {
+  min-height: 24px;
+  margin: 16px 0 0;
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.contact-status.success {
+  color: #166534;
+}
+
+.contact-status.error {
+  color: #991b1b;
+}
+
 .buyer-intake-dialog,
 .agreement-dialog {
   width: min(100% - 28px, 760px);

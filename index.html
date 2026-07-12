@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; connect-src 'none'; form-action 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; worker-src 'none'; base-uri 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'"
+      content="default-src 'self'; connect-src 'self'; form-action 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; worker-src 'none'; base-uri 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'"
     />
     <meta name="referrer" content="no-referrer" />
     <meta name="robots" content="noindex, nofollow" />
@@ -21,7 +21,7 @@
     <meta property="og:type" content="website" />
     <link rel="icon" href="favicon.ico" />
     <title>EscrowLess | Public Demo</title>
-    <link rel="stylesheet" href="styles.css?v=9" />
+    <link rel="stylesheet" href="styles.css?v=10" />
   </head>
   <body>
     <div class="prototype-banner">
@@ -491,59 +491,82 @@
             <p class="eyebrow">Contact EscrowLess</p>
             <h1>Questions, feedback, or partnership interest?</h1>
             <p>
-              Production intent: this form will send a message directly to EscrowLess.
-              In this public demo version, delivery is disabled and no message leaves your browser.
+              This form sends a basic contact message to EscrowLess at info@escrowless.net.
+              It is not a secure document portal and cannot be used for transaction instructions.
             </p>
           </div>
           <div class="contact-grid">
             <section class="form-card">
+              <div class="contact-warning">
+                <strong>Do not submit sensitive information here.</strong>
+                <p>
+                  Do not send SSNs, bank account numbers, proof of funds, IDs, purchase agreements,
+                  financial documents, legal complaints, private case facts, escrow instructions, or
+                  other sensitive private information through this basic contact form.
+                </p>
+              </div>
               <div class="field-grid" id="contactForm">
+                <label class="hidden-honeypot" aria-hidden="true">
+                  <span>Website</span>
+                  <input id="contactWebsite" type="text" autocomplete="off" tabindex="-1" />
+                </label>
+                <input id="contactBotToken" type="hidden" value="" />
                 <label class="field">
                   <span>Name</span>
-                  <input id="contactName" type="text" autocomplete="off" placeholder="Your name" />
+                  <input id="contactName" type="text" autocomplete="name" maxlength="100" placeholder="Your name" />
                 </label>
                 <label class="field">
                   <span>Email</span>
-                  <input id="contactEmail" type="email" autocomplete="off" placeholder="you@example.com" />
+                  <input id="contactEmail" type="email" autocomplete="email" maxlength="254" placeholder="you@example.com" />
                 </label>
                 <label class="field">
                   <span>Phone <small>(optional)</small></span>
-                  <input id="contactPhone" type="tel" autocomplete="off" placeholder="(555) 010-0100" />
+                  <input id="contactPhone" type="tel" autocomplete="tel" maxlength="40" placeholder="(555) 010-0100" />
                 </label>
                 <label class="field">
-                  <span>Topic</span>
+                  <span>Contact reason</span>
                   <select id="contactTopic">
-                    <option value="">Choose a topic</option>
-                    <option>Investor inquiry</option>
-                    <option>Potential vendor or partner</option>
-                    <option>Product feedback</option>
-                    <option>General question</option>
+                    <option value="">Choose a reason</option>
+                    <option>General</option>
+                    <option>Partnerships</option>
+                    <option>Investors</option>
+                    <option>Press</option>
+                    <option>Careers</option>
+                    <option>Billing</option>
+                    <option>Support</option>
+                    <option>Legal</option>
+                    <option>Compliance</option>
                   </select>
                 </label>
                 <label class="field full-field">
                   <span>Message</span>
-                  <textarea id="contactMessage" rows="7" placeholder="How can EscrowLess help?"></textarea>
+                  <textarea id="contactMessage" rows="7" maxlength="2000" placeholder="How can EscrowLess help?"></textarea>
                 </label>
                 <label class="consent-row full-field">
                   <input id="contactConsent" type="checkbox" />
-                  <span>I understand this public demo will not send my message.</span>
+                  <span>
+                    I understand this basic contact form is not for SSNs, bank information, identity documents,
+                    proof-of-funds documents, escrow instructions, legal complaints, private case facts, purchase
+                    agreements, or other sensitive financial/private information.
+                  </span>
                 </label>
               </div>
+              <p class="contact-status" id="contactStatus" role="status" aria-live="polite"></p>
               <div class="form-actions">
                 <button class="secondary-button cancel-button" data-view-link="home">Cancel</button>
-                <button class="primary-button" data-action="preview-contact">Preview message workflow</button>
+                <button class="primary-button" id="contactSubmitButton" data-action="submit-contact">Send message to EscrowLess</button>
               </div>
             </section>
             <aside class="workspace-side">
               <section class="side-card">
-                <p class="eyebrow">Future recipient</p>
-                <h3>EscrowLess, Inc.</h3>
-                <p>After privacy, security, spam-control, retention, and email-provider approvals, contact messages can be routed to the firm.</p>
+                <p class="eyebrow">Destination mailbox</p>
+                <h3>info@escrowless.net</h3>
+                <p>Every contact-form submission is routed only to this EscrowLess intake alias for now.</p>
               </section>
               <section class="side-card safety-card">
-                <p class="eyebrow">Current status</p>
-                <strong>Email adapter: mock</strong>
-                <p>No real message delivery, database write, notification, or analytics event is enabled.</p>
+                <p class="eyebrow">Security boundary</p>
+                <strong>Basic email intake only</strong>
+                <p>No file uploads, account creation, payments, offers, contracts, transaction instructions, database storage, or production Supabase writes are enabled by this form.</p>
               </section>
             </aside>
           </div>
@@ -1035,10 +1058,11 @@
           advice.
         </p>
         <p>
-          This public demo cannot create accounts, submit or transmit forms, store
-          records, upload files, send notifications or emails, process
-          payments, generate binding contracts, connect to production
-          databases, or be used for any real transaction.
+          This public demo cannot create accounts, store records, upload files,
+          send transaction notices, process payments, generate binding contracts,
+          connect to production databases, or be used for any real transaction.
+          The basic contact form may send a non-sensitive message to EscrowLess
+          at info@escrowless.net.
         </p>
         <div class="disclosure-facts">
           <span>Mock listings</span>
@@ -1159,10 +1183,10 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    <script src="demo-config.js?v=8"></script>
-    <script src="demo-safety.js?v=7"></script>
+    <script src="demo-config.js?v=9"></script>
+    <script src="demo-safety.js?v=8"></script>
     <script src="sandbox-platform.js?v=7"></script>
     <script src="agreements.generated.js?v=7"></script>
-    <script src="app.js?v=9"></script>
+    <script src="app.js?v=10"></script>
   </body>
 </html>

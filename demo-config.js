@@ -3,16 +3,18 @@
 window.ESCROWLESS_CONFIG = Object.freeze({
   companyName: "EscrowLess, Inc.",
   environment: "public-demo",
-  release: "8.0.1-offer-strength-refresh",
+  release: "8.1.0-live-contact-intake",
   demoOnly: true,
   mockDataOnly: true,
   publicDemoOnly: true,
   allowTemporaryMockEdits: true,
   allowMockProviderCalls: true,
+  allowLiveContactForm: true,
   realWorldEffectsDisabled: true,
   features: Object.freeze({
     accountCreation: false,
     authentication: false,
+    publicContactForm: true,
     formSubmission: false,
     recordPersistence: false,
     fileUploads: false,
@@ -60,6 +62,6 @@ window.ESCROWLESS_CONFIG = Object.freeze({
     remoteNotary: Object.freeze({ mode: "mock", credentialState: "none" }),
     eClosing: Object.freeze({ mode: "mock", credentialState: "none" }),
     eRecording: Object.freeze({ mode: "mock", credentialState: "none" }),
-    contactDelivery: Object.freeze({ mode: "mock", credentialState: "none" }),
+    contactDelivery: Object.freeze({ mode: "server-smtp", credentialState: "server-only-env" }),
   }),
 });

@@ -1,0 +1,15 @@
+{
+  "name": "escrowless-public-demo",
+  "version": "8.1.0",
+  "private": true,
+  "description": "EscrowLess public demo with a secure server-side contact endpoint.",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "check": "node --check app.js && node --check demo-config.js && node --check demo-safety.js && node --check api/contact.js"
+  },
+  "dependencies": {
+    "nodemailer": "^6.9.16"
+  }
+}
