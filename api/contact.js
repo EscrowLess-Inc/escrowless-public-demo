@@ -278,6 +278,24 @@ function createTransport(port, secure) {
   });
 }
 
+function smtpConnectionDetails(port) {
+  return {
+    host: process.env.CONTACT_SMTP_HOST || "mail.privateemail.com",
+    port,
+    secure: port === 465,
+    userDomain: process.env.CONTACT_SMTP_USER?.trim().split("@").at(-1) || "missing",
+  };
+}
+
+function sanitizeSmtpError(error, port) {
+  return {
+    ...smtpConnectionDetails(port),
+    transportCode: error?.code || "unknown",
+    responseCode: error?.responseCode || null,
+    command: error?.command || null,
+  };
+}
+
 async function sendContactEmail(submission, submissionId, timestamp) {
   const smtpUser = process.env.CONTACT_SMTP_USER?.trim();
   if (!smtpUser || !process.env.CONTACT_SMTP_PASSWORD) {
@@ -304,9 +322,16 @@ async function sendContactEmail(submission, submissionId, timestamp) {
     await createTransport(primaryPort, primarySecure).sendMail(mail);
   } catch (error) {
     if (primaryPort === 587 || process.env.CONTACT_SMTP_DISABLE_587_FALLBACK === "true") {
+      error.safeSmtpDetails = sanitizeSmtpError(error, primaryPort);
       throw error;
     }
-    await createTransport(587, false).sendMail(mail);
+    try {
+      await createTransport(587, false).sendMail(mail);
+    } catch (fallbackError) {
+      fallbackError.safeSmtpDetails = sanitizeSmtpError(fallbackError, 587);
+      fallbackError.primarySmtpDetails = sanitizeSmtpError(error, primaryPort);
+      throw fallbackError;
+    }
   }
 }
 
@@ -380,6 +405,8 @@ module.exports = async function contactHandler(req, res) {
       submissionId,
       timestamp,
       errorClass: classifyError(error),
+      smtp: error?.safeSmtpDetails || null,
+      primarySmtp: error?.primarySmtpDetails || null,
       result: "failed",
     });
     sendJson(res, statusCode, {
