@@ -7,8 +7,14 @@ const DESTINATION_EMAIL = "info@escrowless.net";
 const FROM_NAME = "EscrowLess Contact Form";
 const SOURCE_LABEL = "escrowless.net contact form";
 const ESCROWLESS_EMAIL_PATTERN = /^[a-z0-9._%+-]+@escrowless\.net$/i;
-const MAX_BODY_BYTES = 12 * 1024;
+const CONTACT_MESSAGE_MAX_CHARS = 10000;
+const MAX_BODY_BYTES = 64 * 1024;
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+const TURNSTILE_ACTION = "contact_form";
+const TURNSTILE_SITEVERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+const PRODUCTION_ORIGINS = new Set(["https://escrowless.net", "https://www.escrowless.net"]);
+const PRODUCTION_HOSTS = new Set(["escrowless.net", "www.escrowless.net"]);
+const LOCALHOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
 const RATE_LIMITS = Object.freeze({
   ip: 8,
   email: 4,
@@ -35,6 +41,9 @@ const ALLOWED_FIELDS = new Set([
   "botToken",
 ]);
 
+// Backup only: in-memory rate limits are weak on Vercel/serverless because
+// instances reset and do not share state. Keep this as a local speed bump until
+// a shared rate-limit store is approved.
 const ipRateLimit = new Map();
 const emailRateLimit = new Map();
 
@@ -64,6 +73,24 @@ function getClientIp(req) {
   return forwardedFor.split(",")[0].trim() || req.socket?.remoteAddress || "unknown";
 }
 
+function hostFromRequest(req) {
+  const forwardedHost = String(req.headers["x-forwarded-host"] || "");
+  const host = forwardedHost.split(",")[0].trim() || String(req.headers.host || "").trim();
+  return host.toLowerCase().replace(/:\d+$/, "");
+}
+
+function isProductionRequest(req) {
+  return process.env.VERCEL_ENV === "production" || PRODUCTION_HOSTS.has(hostFromRequest(req));
+}
+
+function isLocalOrigin(url) {
+  return LOCALHOSTS.has(url.hostname);
+}
+
+function startsWithApprovedOrigin(value) {
+  return [...PRODUCTION_ORIGINS].some((origin) => value === origin || value.startsWith(`${origin}/`));
+}
+
 function applyRateLimit(store, key, limit) {
   const now = Date.now();
   const current = store.get(key);
@@ -86,11 +113,27 @@ function removeExpiredRateLimitEntries(store) {
 }
 
 function validateOrigin(req) {
-  const origin = req.headers.origin;
+  const origin = String(req.headers.origin || "");
+  const referer = String(req.headers.referer || "");
+
+  if (isProductionRequest(req)) {
+    if (origin) {
+      if (!PRODUCTION_ORIGINS.has(origin)) {
+        throw new PublicInputError(403, "This request origin is not allowed.", "origin_denied");
+      }
+      return;
+    }
+    if (!referer || !startsWithApprovedOrigin(referer)) {
+      throw new PublicInputError(403, "This request origin is not allowed.", "referer_required");
+    }
+    return;
+  }
+
   if (!origin) return;
   try {
     const originUrl = new URL(origin);
-    if (originUrl.host !== req.headers.host) {
+    const requestHost = String(req.headers.host || "");
+    if (originUrl.host !== requestHost && !isLocalOrigin(originUrl)) {
       throw new PublicInputError(403, "This request origin is not allowed.", "origin_denied");
     }
   } catch (error) {
@@ -103,6 +146,25 @@ function validateHttps(req) {
   const forwardedProto = String(req.headers["x-forwarded-proto"] || "");
   if (process.env.VERCEL_ENV === "production" && forwardedProto && forwardedProto !== "https") {
     throw new PublicInputError(400, "Secure HTTPS is required.", "https_required");
+  }
+}
+
+function validateContentLength(req) {
+  const header = req.headers["content-length"];
+  if (header === undefined) return;
+  const contentLength = Number(header);
+  if (!Number.isFinite(contentLength) || contentLength < 0) {
+    throw new PublicInputError(400, "The request body is invalid.", "content_length_invalid");
+  }
+  if (contentLength > MAX_BODY_BYTES) {
+    throw new PublicInputError(413, "The message is too large.", "body_too_large");
+  }
+}
+
+function validateParsedBodySize(payload) {
+  const size = Buffer.byteLength(JSON.stringify(payload || {}), "utf8");
+  if (size > MAX_BODY_BYTES) {
+    throw new PublicInputError(413, "The message is too large.", "body_too_large");
   }
 }
 
@@ -203,42 +265,46 @@ function validatePayload(payload) {
     email: normalizeEmail(payload.email),
     phone: normalizeText(payload.phone || "", "phone", { max: 40, optional: true }),
     category,
-    message: normalizeText(payload.message, "message", { min: 1, max: 2000, multiline: true }),
+    message: normalizeText(payload.message, "message", { min: 1, max: CONTACT_MESSAGE_MAX_CHARS, multiline: true }),
     consent: true,
-    botToken: normalizeText(payload.botToken || "", "botToken", { max: 1200, optional: true }),
+    botToken: normalizeText(payload.botToken || "", "botToken", { max: 2048, optional: true }),
   };
 }
 
-async function verifyBotToken(submission, clientIp) {
-  const provider = String(process.env.CONTACT_BOT_PROVIDER || "").toLowerCase();
-  const secret = process.env.CONTACT_BOT_SECRET;
-  if (!provider && !secret) return;
-  if (!provider || !secret || !submission.botToken) {
+async function verifyTurnstileToken(submission, clientIp, req) {
+  const secret = process.env.TURNSTILE_SECRET_KEY;
+  const shouldVerify = isProductionRequest(req) || Boolean(secret) || Boolean(submission.botToken);
+  if (!shouldVerify) return;
+  if (!secret || !submission.botToken) {
     throw new PublicInputError(400, "Bot verification failed.", "bot_verification_missing");
-  }
-
-  const endpoints = {
-    turnstile: "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-    hcaptcha: "https://hcaptcha.com/siteverify",
-  };
-  const endpoint = endpoints[provider];
-  if (!endpoint) {
-    throw new PublicInputError(500, "Contact form is not configured.", "bot_provider_invalid");
   }
 
   const body = new URLSearchParams({
     secret,
     response: submission.botToken,
     remoteip: clientIp,
+    idempotency_key: crypto.randomUUID(),
   });
-  const response = await fetch(endpoint, {
+
+  const response = await fetch(TURNSTILE_SITEVERIFY_URL, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body,
   });
+
+  if (!response.ok) {
+    throw new PublicInputError(400, "Bot verification failed.", "bot_verification_unavailable");
+  }
+
   const result = await response.json().catch(() => ({}));
   if (!result.success) {
     throw new PublicInputError(400, "Bot verification failed.", "bot_verification_failed");
+  }
+  if (result.hostname && !PRODUCTION_HOSTS.has(String(result.hostname).toLowerCase())) {
+    throw new PublicInputError(400, "Bot verification failed.", "bot_hostname_invalid");
+  }
+  if (result.action && result.action !== TURNSTILE_ACTION) {
+    throw new PublicInputError(400, "Bot verification failed.", "bot_action_invalid");
   }
 }
 
@@ -278,24 +344,6 @@ function createTransport(port, secure) {
   });
 }
 
-function smtpConnectionDetails(port) {
-  return {
-    host: process.env.CONTACT_SMTP_HOST || "mail.privateemail.com",
-    port,
-    secure: port === 465,
-    userDomain: process.env.CONTACT_SMTP_USER?.trim().split("@").at(-1) || "missing",
-  };
-}
-
-function sanitizeSmtpError(error, port) {
-  return {
-    ...smtpConnectionDetails(port),
-    transportCode: error?.code || "unknown",
-    responseCode: error?.responseCode || null,
-    command: error?.command || null,
-  };
-}
-
 async function sendContactEmail(submission, submissionId, timestamp) {
   const smtpUser = process.env.CONTACT_SMTP_USER?.trim();
   if (!smtpUser || !process.env.CONTACT_SMTP_PASSWORD) {
@@ -322,14 +370,11 @@ async function sendContactEmail(submission, submissionId, timestamp) {
     await createTransport(primaryPort, primarySecure).sendMail(mail);
   } catch (error) {
     if (primaryPort === 587 || process.env.CONTACT_SMTP_DISABLE_587_FALLBACK === "true") {
-      error.safeSmtpDetails = sanitizeSmtpError(error, primaryPort);
       throw error;
     }
     try {
       await createTransport(587, false).sendMail(mail);
     } catch (fallbackError) {
-      fallbackError.safeSmtpDetails = sanitizeSmtpError(fallbackError, 587);
-      fallbackError.primarySmtpDetails = sanitizeSmtpError(error, primaryPort);
       throw fallbackError;
     }
   }
@@ -364,6 +409,7 @@ module.exports = async function contactHandler(req, res) {
 
     validateHttps(req);
     validateOrigin(req);
+    validateContentLength(req);
 
     removeExpiredRateLimitEntries(ipRateLimit);
     removeExpiredRateLimitEntries(emailRateLimit);
@@ -375,6 +421,7 @@ module.exports = async function contactHandler(req, res) {
     }
 
     const payload = await readJsonBody(req);
+    validateParsedBodySize(payload);
     const submission = validatePayload(payload);
 
     if (submission.botSubmission) {
@@ -389,13 +436,12 @@ module.exports = async function contactHandler(req, res) {
       throw new PublicInputError(429, "Too many contact attempts. Please wait and try again.", "email_rate_limited");
     }
 
-    await verifyBotToken(submission, clientIp);
+    await verifyTurnstileToken(submission, clientIp, req);
     await sendContactEmail(submission, submissionId, timestamp);
 
     console.info("contact_submission_sent", {
       submissionId,
       timestamp,
-      category: submission.category,
       result: "sent",
     });
     sendJson(res, 200, { ok: true, submissionId });
@@ -405,8 +451,6 @@ module.exports = async function contactHandler(req, res) {
       submissionId,
       timestamp,
       errorClass: classifyError(error),
-      smtp: error?.safeSmtpDetails || null,
-      primarySmtp: error?.primarySmtpDetails || null,
       result: "failed",
     });
     sendJson(res, statusCode, {

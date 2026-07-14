@@ -1,5 +1,5 @@
 /*
-  Content-Security-Policy: default-src 'self'; connect-src 'self'; form-action 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; worker-src 'none'; base-uri 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; connect-src 'self' https://challenges.cloudflare.com; form-action 'none'; object-src 'none'; frame-src https://challenges.cloudflare.com; child-src https://challenges.cloudflare.com; worker-src 'none'; base-uri 'none'; img-src 'self' data:; style-src 'self'; script-src 'self' https://challenges.cloudflare.com; frame-ancestors 'none'
   Referrer-Policy: no-referrer
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY

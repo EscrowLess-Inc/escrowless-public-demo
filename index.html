@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; connect-src 'self'; form-action 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; worker-src 'none'; base-uri 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'"
+      content="default-src 'self'; connect-src 'self' https://challenges.cloudflare.com; form-action 'none'; object-src 'none'; frame-src https://challenges.cloudflare.com; child-src https://challenges.cloudflare.com; worker-src 'none'; base-uri 'none'; img-src 'self' data:; style-src 'self'; script-src 'self' https://challenges.cloudflare.com"
     />
     <meta name="referrer" content="no-referrer" />
     <meta name="robots" content="noindex, nofollow" />
@@ -20,6 +20,7 @@
     />
     <meta property="og:type" content="website" />
     <link rel="icon" href="favicon.ico" />
+    <link rel="preconnect" href="https://challenges.cloudflare.com" />
     <title>EscrowLess | Public Demo</title>
     <link rel="stylesheet" href="styles.css?v=10" />
   </head>
@@ -31,11 +32,10 @@
 
     <header class="site-header">
       <button class="brand" data-action="home" aria-label="EscrowLess home">
-        <span class="brand-mark" aria-hidden="true">
-          <span></span>
-          <span></span>
+        <span class="brand-logo-frame" aria-hidden="true">
+          <img class="brand-logo" src="assets/escrowless-logo.png" alt="" />
         </span>
-        <span>Escrow<span>Less</span></span>
+        <span class="brand-name">Escrow<span>Less</span></span>
       </button>
 
       <nav aria-label="Primary navigation">
@@ -540,7 +540,7 @@
                 </label>
                 <label class="field full-field">
                   <span>Message</span>
-                  <textarea id="contactMessage" rows="7" maxlength="2000" placeholder="How can EscrowLess help?"></textarea>
+                  <textarea id="contactMessage" rows="7" maxlength="10000" placeholder="How can EscrowLess help?"></textarea>
                 </label>
                 <label class="consent-row full-field">
                   <input id="contactConsent" type="checkbox" />
@@ -550,6 +550,12 @@
                     agreements, or other sensitive financial/private information.
                   </span>
                 </label>
+                <div class="turnstile-panel full-field" id="turnstilePanel">
+                  <div id="turnstileWidget" class="turnstile-widget" aria-label="Security verification"></div>
+                  <p id="turnstileStatus" class="turnstile-status" role="status" aria-live="polite">
+                    Complete the security verification before sending.
+                  </p>
+                </div>
               </div>
               <p class="contact-status" id="contactStatus" role="status" aria-live="polite"></p>
               <div class="form-actions">
@@ -1183,10 +1189,12 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+    <script src="/api/public-config?v=1"></script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
     <script src="demo-config.js?v=9"></script>
     <script src="demo-safety.js?v=8"></script>
     <script src="sandbox-platform.js?v=7"></script>
     <script src="agreements.generated.js?v=7"></script>
-    <script src="app.js?v=10"></script>
+    <script src="app.js?v=11"></script>
   </body>
 </html>

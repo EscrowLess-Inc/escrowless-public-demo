@@ -58,16 +58,17 @@ third-party integrations.
   the approved shape.
 - `sandbox-platform.js` provides mock adapter contracts and a redacted,
   in-memory audit trail without exposing internal configuration controls.
-- The Content Security Policy allows same-origin `connect-src 'self'` only so
-  the browser can call `/api/contact`; form actions, frames, workers, and
-  plugins remain blocked.
+- The Content Security Policy allows same-origin contact requests and the
+  narrow Cloudflare Turnstile script/frame endpoints needed for bot protection;
+  form actions, workers, plugins, and unrelated external connections remain blocked.
 - Transaction controls use mock data. The only mutable state exists temporarily in JavaScript memory and disappears on refresh.
 - Persistent top and bottom notices plus an entry dialog display the full demo disclosure.
 - The supplied buyer and seller agreement text is view-only, carries a
   conspicuous nonbinding overlay, and cannot capture or apply a signature.
 - The contact endpoint validates input server-side, rejects unexpected fields,
-  uses a honeypot, applies in-memory rate limits, sends via SMTP credentials
-  stored only in Vercel environment variables, and logs only minimal metadata.
+  uses a honeypot, verifies Cloudflare Turnstile in production, applies backup
+  in-memory rate limits, sends via SMTP credentials stored only in Vercel
+  environment variables, and logs only minimal metadata.
 
 ## Live contact form
 
@@ -77,6 +78,7 @@ Production browser path:
 Visitor browser
 -> https://escrowless.net/api/contact
 -> Vercel serverless function
+-> Cloudflare Turnstile Siteverify
 -> Namecheap Private Email SMTP over TLS/SSL
 -> info@escrowless.net
 ```
@@ -90,8 +92,10 @@ Create these manually in Vercel. Use Sensitive Environment Variables where
 available.
 
 ```text
-CONTACT_SMTP_USER=adam@escrowless.net
-CONTACT_SMTP_PASSWORD=[Namecheap Private Email password for the real mailbox]
+CONTACT_SMTP_USER=<SMTP_USER>
+CONTACT_SMTP_PASSWORD=<SMTP_APP_PASSWORD>
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=<TURNSTILE_SITE_KEY>
+TURNSTILE_SECRET_KEY=<TURNSTILE_SECRET_KEY>
 ```
 
 Optional:
@@ -100,18 +104,19 @@ Optional:
 CONTACT_SMTP_HOST=mail.privateemail.com
 CONTACT_SMTP_PORT=465
 CONTACT_SMTP_DISABLE_587_FALLBACK=false
-CONTACT_BOT_PROVIDER=turnstile
-CONTACT_BOT_SECRET=[Turnstile secret key]
 ```
 
-If `CONTACT_BOT_PROVIDER` and `CONTACT_BOT_SECRET` are omitted, the contact form
-uses server-side validation, rate limiting, and a honeypot only. A future
-Turnstile or hCaptcha widget will require a frontend widget token and CSP
-updates for that provider.
+In production, Turnstile fails closed if either Turnstile environment variable
+is missing or token validation fails. The public site key is exposed to the
+browser through `/api/public-config`; the Turnstile secret remains server-only.
 
 `info@escrowless.net` may remain an alias. The SMTP username must be a real
 EscrowLess mailbox that can authenticate to Namecheap Private Email. The
 endpoint still delivers every submission only to `info@escrowless.net`.
+
+The contact message field accepts up to 10,000 characters. The contact form is
+still not a secure document portal and must not receive sensitive transaction,
+identity, legal, or financial materials.
 
 ### Local test plan
 
@@ -122,8 +127,8 @@ endpoint still delivers every submission only to `info@escrowless.net`.
    exposing backend details.
 5. With local test env vars set outside the repo, submit a harmless test message
    and confirm it reaches `info@escrowless.net`.
-6. Test invalid email, missing consent, an overlong message, and the hidden
-   honeypot field.
+6. Test invalid email, missing consent, an overlong message, the Turnstile
+   challenge, and the hidden honeypot field.
 
 ### Production test plan
 
@@ -131,11 +136,12 @@ endpoint still delivers every submission only to `info@escrowless.net`.
 2. Deploy only after review and approval.
 3. Open `https://escrowless.net` and use the normal Contact navigation path.
 4. Submit a harmless test message using a non-sensitive body.
-5. Confirm receipt at `info@escrowless.net`.
-6. Confirm the reply-to address is the submitted user email.
-7. Submit a second test to an alias-like scenario only after the direct
+5. Confirm Turnstile appears and must be completed before submission.
+6. Confirm receipt at `info@escrowless.net`.
+7. Confirm the reply-to address is the submitted user email.
+8. Submit a second test to an alias-like scenario only after the direct
    `info@escrowless.net` path works.
-8. Confirm the website, property flow, offer strength, and saved-property
+9. Confirm the website, property flow, offer strength, and saved-property
    interactions still work.
 
 ### Rollback
@@ -144,9 +150,11 @@ If the contact form causes trouble:
 
 1. Revert the deployment to the previous Vercel deployment.
 2. Or remove the Vercel env vars so SMTP cannot send.
-3. Or revert the commit that added `/api/contact`, the contact frontend changes,
-   and the CSP `connect-src 'self'` change.
-4. No DNS rollback is required; this implementation does not alter Vercel
+3. Or remove the Turnstile env vars to intentionally fail closed while you
+   investigate.
+4. Or revert the commit that added `/api/contact`, `/api/public-config`, the
+   contact frontend changes, and the CSP Turnstile allowances.
+5. No DNS rollback is required; this implementation does not alter Vercel
    domain routing, Namecheap nameservers, A records, CNAME records, MX records,
    SPF, DKIM, or DMARC.
 

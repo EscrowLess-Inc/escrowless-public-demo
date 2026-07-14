@@ -7,7 +7,7 @@
     "node": ">=18"
   },
   "scripts": {
-    "check": "node --check app.js && node --check demo-config.js && node --check demo-safety.js && node --check api/contact.js"
+    "check": "node --check app.js && node --check demo-config.js && node --check demo-safety.js && node --check api/contact.js && node --check api/public-config.js"
   },
   "dependencies": {
     "nodemailer": "^6.9.16"

@@ -40,16 +40,21 @@
     throw new Error("Network and production operations are disabled in the public demo.");
   };
 
-  function isAllowedContactRequest(resource, init = {}) {
+  function isAllowedNetworkRequest(resource, init = {}) {
     try {
       const url = new URL(typeof resource === "string" ? resource : resource?.url, window.location.origin);
       const method = String(init.method || resource?.method || "GET").toUpperCase();
-      return (
+      const isContactRequest =
         originalFetch &&
         method === "POST" &&
         url.origin === window.location.origin &&
-        url.pathname === "/api/contact"
-      );
+        url.pathname === "/api/contact";
+      const isTurnstileRequest =
+        originalFetch &&
+        ["GET", "POST"].includes(method) &&
+        url.origin === "https://challenges.cloudflare.com" &&
+        url.pathname.startsWith("/turnstile/");
+      return isContactRequest || isTurnstileRequest;
     } catch {
       return false;
     }
@@ -60,7 +65,7 @@
       configurable: false,
       writable: false,
       value: (resource, init = {}) => {
-        if (isAllowedContactRequest(resource, init)) {
+        if (isAllowedNetworkRequest(resource, init)) {
           return originalFetch(resource, { ...init, credentials: "same-origin" });
         }
         return blocked();

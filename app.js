@@ -822,6 +822,15 @@ const contactCategories = Object.freeze([
   "Legal",
   "Compliance",
 ]);
+const CONTACT_MESSAGE_MAX_LENGTH = 10000;
+const TURNSTILE_ACTION = "contact_form";
+const PRODUCTION_HOSTS = new Set(["escrowless.net", "www.escrowless.net"]);
+const turnstileState = {
+  widgetId: null,
+  token: "",
+  renderAttempts: 0,
+  renderedSiteKey: "",
+};
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -1767,6 +1776,101 @@ function setContactStatus(message, type = "") {
   if (type) status.classList.add(type);
 }
 
+function getPublicConfig() {
+  return window.ESCROWLESS_PUBLIC_CONFIG || {};
+}
+
+function getTurnstileSiteKey() {
+  return String(getPublicConfig().turnstileSiteKey || "").trim();
+}
+
+function isProductionHost() {
+  return PRODUCTION_HOSTS.has(window.location.hostname);
+}
+
+function isTurnstileRequired() {
+  return getPublicConfig().turnstileRequired === true || isProductionHost();
+}
+
+function setTurnstileStatus(message, type = "") {
+  const status = $("#turnstileStatus");
+  if (!status) return;
+  status.textContent = message;
+  status.classList.remove("success", "error");
+  if (type) status.classList.add(type);
+}
+
+function setTurnstileToken(token) {
+  turnstileState.token = token || "";
+  const tokenField = $("#contactBotToken");
+  if (tokenField) tokenField.value = turnstileState.token;
+}
+
+function resetTurnstileWidget() {
+  setTurnstileToken("");
+  if (window.turnstile && turnstileState.widgetId !== null) {
+    try {
+      window.turnstile.reset(turnstileState.widgetId);
+    } catch {
+      // The server-side validation remains the enforcement layer.
+    }
+  }
+}
+
+function renderTurnstileWidget() {
+  const panel = $("#turnstilePanel");
+  const container = $("#turnstileWidget");
+  if (!panel || !container) return;
+
+  const required = isTurnstileRequired();
+  const siteKey = getTurnstileSiteKey();
+  panel.classList.toggle("is-hidden", !required && !siteKey);
+
+  if (!siteKey) {
+    setTurnstileToken("");
+    if (required) {
+      setTurnstileStatus("Security verification is temporarily unavailable. Please try again later.", "error");
+    } else {
+      setTurnstileStatus("Security verification is not required in this local preview.", "");
+    }
+    return;
+  }
+
+  if (!window.turnstile?.render) {
+    turnstileState.renderAttempts += 1;
+    if (turnstileState.renderAttempts <= 25) {
+      window.setTimeout(renderTurnstileWidget, 200);
+      setTurnstileStatus("Loading security verification...", "");
+    } else if (required) {
+      setTurnstileStatus("Security verification could not load. Please refresh and try again.", "error");
+    }
+    return;
+  }
+
+  if (turnstileState.widgetId && turnstileState.renderedSiteKey === siteKey) return;
+
+  container.innerHTML = "";
+  setTurnstileToken("");
+  turnstileState.widgetId = window.turnstile.render(container, {
+    sitekey: siteKey,
+    action: TURNSTILE_ACTION,
+    callback: (token) => {
+      setTurnstileToken(token);
+      setTurnstileStatus("Security verification complete.", "success");
+    },
+    "expired-callback": () => {
+      setTurnstileToken("");
+      setTurnstileStatus("Security verification expired. Please complete it again.", "error");
+    },
+    "error-callback": () => {
+      setTurnstileToken("");
+      setTurnstileStatus("Security verification failed to load. Please refresh and try again.", "error");
+    },
+  });
+  turnstileState.renderedSiteKey = siteKey;
+  setTurnstileStatus("Complete the security verification before sending.", "");
+}
+
 async function submitContactMessage() {
   const name = getFieldValue("contactName");
   const email = getFieldValue("contactEmail");
@@ -1774,7 +1878,7 @@ async function submitContactMessage() {
   const topic = getFieldValue("contactTopic");
   const message = getFieldValue("contactMessage");
   const website = getFieldValue("contactWebsite");
-  const botToken = getFieldValue("contactBotToken");
+  const botToken = turnstileState.token || getFieldValue("contactBotToken");
   const messages = [];
   let focusId = "";
   if (!name) {
@@ -1802,13 +1906,20 @@ async function submitContactMessage() {
   if (!message) {
     messages.push("Enter a question, comment, or concern.");
     focusId ||= "contactMessage";
-  } else if (message.length > 2000) {
-    messages.push("Keep your message under 2,000 characters.");
+  } else if (message.length > CONTACT_MESSAGE_MAX_LENGTH) {
+    messages.push("Keep your message under 10,000 characters.");
     focusId ||= "contactMessage";
   }
   if (!$("#contactConsent").checked) {
     messages.push("Confirm that you will not submit sensitive private or financial information through this basic contact form.");
     focusId ||= "contactConsent";
+  }
+  if (isTurnstileRequired() && !getTurnstileSiteKey()) {
+    messages.push("Security verification is temporarily unavailable. Please try again later.");
+    focusId ||= "turnstileWidget";
+  } else if ((isTurnstileRequired() || getTurnstileSiteKey()) && !botToken) {
+    messages.push("Complete the security verification.");
+    focusId ||= "turnstileWidget";
   }
   if (messages.length) {
     showValidation("Complete the contact form.", messages, focusId);
@@ -1850,8 +1961,10 @@ async function submitContactMessage() {
       if (field) field.value = "";
     });
     $("#contactConsent").checked = false;
+    resetTurnstileWidget();
   } catch {
     audit("contact.message.failed", { category: topic }, "failed");
+    resetTurnstileWidget();
     setContactStatus("Your message was not sent. Please try again in a few minutes.", "error");
   } finally {
     submitButton.disabled = false;
@@ -2517,6 +2630,7 @@ function goToView(name) {
   if (name === "tour") renderTour();
   if (name === "seller") renderSellerEstimator();
   if (name === "sellerReview") renderSellerReviewStatus();
+  if (name === "contact") renderTurnstileWidget();
 }
 
 function renderReviewDesk() {
@@ -2860,6 +2974,7 @@ function resetDemo() {
   renderWorkspace();
   renderRoleWorkspace();
   renderFeatureExplorer();
+  resetTurnstileWidget();
   goToView("home");
   showToast("The public demo simulation has been reset. No records were stored.");
 }
